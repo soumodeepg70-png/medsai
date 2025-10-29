@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>MedsAI Pro — Telemedicine (Final)</title>
+    <meta name="description"
+        content="MedsAI Pro — Telemedicine, Doctor booking, Pay-before-call, Prescription upload, SOS, Health tracking. Demo only." />
+    <style>
+        /* ===========================================================
+   MedsAI Pro — Final (Single-file prototype)
+   - Modern premium UI (distinct from basic MedsAI)
+   - Features: Login, Payment, Doctor booking, Call/Video (pay-first),
+     Prescription upload, SOS (pro), Health reports, AI Symptom Checker
+   =========================================================== */
+
+        /* Design tokens */
+        :root {
+            --bg-1: #071129;
+            --bg-2: #0f1724;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --glass: rgba(255, 255, 255, 0.04);
+            --muted: #9aa8b2;
+            --accent-a: #7ce7d9;
+            --accent-b: #60a5fa;
+            --accent-c: #8b5cf6;
+            --danger: #ff6b6b;
+            --success: #34d399;
+            --shadow-lg: 0 30px 80px rgba(2, 8, 23, 0.6);
+            --shadow-md: 0 12px 40px rgba(2, 8, 23, 0.45);
+            --radius-lg: 18px;
+            --radius-md: 12px;
+            --ease: cubic-bezier(.2, .9, .28, 1);
+            --owner-phone: 9883741189;
+            /* special owner phone for discounted price */
+            --pro-price: 1999;
+            /* standard Pro price */
+            --pro-owner-price: 1499;
+            /* owner discount */
+            --maxw: 1180px;
+            --sos-size: 86px;
+        }
+
+        /* Reset */
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+            background: radial-gradient(800px 400px at 8% 12%, rgba(96, 165, 250, 0.05), transparent), linear-gradient(180deg, var(--bg-2), var(--bg-1));
+            color: #e6f0f2;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-touch-callout: none;
+            user-select: none;
+            padding: 20px;
+        }
+
+        /* App wrapper */
+        .app {
+            max-width: var(--maxw);
+            margin: 10px auto;
+            padding: 18px;
+            transform-origin: top center;
+            transition: transform .48s var(--ease), opacity .36s var(--ease);
+        }
+
+        /* Panel */
+        .panel {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .logo-plate {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, var(--accent-b), var(--accent-c));
+            box-shadow: 0 10px 30px rgba(76, 29, 149, 0.18);
+            font-weight: 900;
+            color: white;
+            font-size: 20px;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .brand p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .badge {
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            font-weight: 700;
+            color: var(--accent-a);
+        }
+
+        .select {
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--muted)
+        }
+
+        /* Pages */
+        .pages {
+            position: relative;
+            min-height: 740px;
+            padding-bottom: 18px;
+        }
+
+        .page {
+            position: absolute;
+            inset: 0;
+            padding: 18px;
+            overflow: auto;
+            opacity: 0;
+            transform: translateY(28px) scale(.996);
+            transition: opacity .48s var(--ease), transform .48s var(--ease);
+            pointer-events: none;
+        }
+
+        .page.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+            z-index: 30;
+        }
+
+        .page.leaving {
+            opacity: 0;
+            transform: translateY(-18px) scale(.99);
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        /* staged reveal */
+        .stage {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all .48s var(--ease);
+        }
+
+        .page.show-stage .stage {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* card */
+        .card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* inputs */
+        .input,
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            font-size: 15px;
+            background: transparent;
+            color: inherit;
+        }
+
+        .input::placeholder {
+            color: #74898f;
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        /* buttons */
+        .btn {
+            display: inline-block;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: none;
+            color: #052d2e;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
+            cursor: pointer;
+            box-shadow: 0 14px 36px rgba(6, 30, 40, 0.12);
+            transition: transform .14s var(--ease), box-shadow .14s var(--ease);
+        }
+
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 50px rgba(6, 30, 40, 0.18);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn.ghost {
+            background: transparent;
+            color: var(--accent-b);
+            border: 1px solid rgba(255, 255, 255, 0.04)
+        }
+
+        .btn.danger {
+            background: linear-gradient(90deg, #ff7b7b, #ff6b6b);
+            color: white;
+            box-shadow: 0 12px 36px rgba(255, 107, 107, 0.12)
+        }
+
+        .btn.cta {
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-3px)
+            }
+
+            100% {
+                transform: translateY(0)
+            }
+        }
+
+        /* action grid */
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .action {
+            border-radius: 12px;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            cursor: pointer;
+            transition: transform .12s var(--ease);
+        }
+
+        .action:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 30px rgba(3, 9, 23, 0.4);
+        }
+
+        /* list item */
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            margin-top: 8px;
+        }
+
+        /* doctor */
+        .doc-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 12px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.04), rgba(52, 211, 153, 0.02));
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .doc-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, var(--accent-b), var(--accent-a));
+            font-weight: 900;
+            color: #072a2e;
+            font-size: 22px;
+        }
+
+        .badge-aval {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(52, 211, 153, 0.12);
+            color: var(--accent-a);
+            font-weight: 700;
+            font-size: 13px;
+            border: 1px solid rgba(52, 211, 153, 0.06);
+        }
+
+        .badge-off {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(255, 107, 107, 0.06);
+            color: #ff9b9b;
+            font-weight: 700;
+            font-size: 13px;
+            border: 1px solid rgba(255, 107, 107, 0.04)
+        }
+
+        /* call UI */
+        .video-wrap {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .stream-box {
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            height: 320px;
+            position: relative;
+            display: grid;
+            place-items: center;
+        }
+
+        .stream-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 6px 8px;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 700;
+            z-index: 10;
+        }
+
+        /* sos button */
+        .sos-fixed {
+            position: fixed;
+            right: 22px;
+            bottom: 22px;
+            z-index: 120;
+            width: var(--sos-size);
+            height: var(--sos-size);
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, #ff4d4d, #ff8a72);
+            color: white;
+            font-weight: 900;
+            font-size: 20px;
+            box-shadow: 0 12px 40px rgba(255, 80, 80, 0.18);
+            border: 4px solid rgba(255, 255, 255, 0.06);
+            cursor: pointer;
+            animation: sosPulse 2.6s infinite;
+        }
+
+        .sos-fixed:active {
+            transform: scale(.98);
+        }
+
+        @keyframes sosPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 80, 80, 0.28);
+                transform: scale(1);
+            }
+
+            50% {
+                box-shadow: 0 0 0 18px rgba(255, 80, 80, 0.06);
+                transform: scale(1.06);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 80, 80, 0);
+                transform: scale(1);
+            }
+        }
+
+        /* prescription preview */
+        .presc-preview {
+            display: block;
+            margin-top: 12px;
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        /* health chart (small sparkline) */
+        .sparkline {
+            width: 100%;
+            height: 48px;
+            display: block;
+        }
+
+        /* small */
+        .small {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #9fb6bd;
+        }
+
+        /* footer */
+        .footer {
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 12px
+        }
+
+        /* responsive */
+        @media (max-width:980px) {
+            .actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .video-wrap {
+                grid-template-columns: 1fr;
+            }
+
+            .stream-box {
+                height: 220px;
+            }
+
+            .sos-fixed {
+                right: 12px;
+                bottom: 12px;
+                width: 70px;
+                height: 70px;
+            }
+        }
+
+        /* focus */
+        :focus {
+            outline: none;
+            box-shadow: 0 0 0 6px rgba(96, 165, 250, 0.06);
+            border-color: var(--accent-b);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app" id="app">
+        <div class="panel" role="application" aria-label="MedsAI Pro Telemedicine">
+
+            <!-- HEADER -->
+            <div class="header">
+                <div class="brand">
+                    <div class="logo-plate">M+</div>
+                    <div>
+                        <h1 id="brandTitle">MedsAI Pro</h1>
+                        <p id="brandSub" class="small">Telemedicine • Care • Pro Tools</p>
+                    </div>
+                </div>
+
+                <div class="controls" role="navigation" aria-label="Top controls">
+                    <div id="userBadge" class="badge">Guest</div>
+                    <select id="lang" class="select" aria-label="Language select">
+                        <option value="en">English</option>
+                        <option value="bn">বাংলা</option>
+                        <option value="hi">हिन्दी</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- PAGES -->
+            <div class="pages" id="pages">
+
+                <!-- PAGE: LOGIN -->
+                <section id="page-login" class="page active" aria-labelledby="loginTitle">
+                    <div class="card stage">
+                        <h2 id="loginTitle">🔐 Login / Register</h2>
+                        <p id="loginNote" class="small">Enter phone, name & password (demo only)</p>
+                        <div style="margin-top:12px;display:grid;gap:8px">
+                            <input id="loginPhone" class="input" type="tel" placeholder="Phone number" />
+                            <input id="loginName" class="input" placeholder="Full name" />
+                            <input id="loginPass" class="input" type="password" placeholder="Password" />
+                            <div style="display:flex;gap:8px;align-items:center">
+                                <button class="btn" onclick="doLogin()">Continue</button>
+                                <button class="btn ghost" onclick="fillDemo()">Fill Demo</button>
+                                <button class="btn ghost" onclick="skipToPro()">Skip to Pro (demo)</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE: PAYMENT / PRO -->
+                <section id="page-pro" class="page" aria-labelledby="proTitle">
+                    <div class="card stage">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <h2 id="proTitle">⭐ MedsAI Pro — Upgrade</h2>
+                            <div><button class="btn ghost" onclick="navigateTo('page-login')">⬅ Back</button></div>
+                        </div>
+
+                        <div style="margin-top:12px;display:grid;gap:10px">
+                            <p class="small">Enter phone to check special owner discount. Standard ₹1999 • Owner price
+                                ₹1499 (demo).</p>
+                            <input id="proPhone" class="input" placeholder="Phone number for price check" />
+                            <div style="display:flex;gap:12px;align-items:center">
+                                <div
+                                    style="flex:1;padding:16px;border-radius:12px;background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03)">
+                                    <div class="small">Price</div>
+                                    <div style="font-size:22px;font-weight:900;color:var(--accent-a)" id="proPrice">
+                                        ₹1999</div>
+                                    <div id="proNote" class="hint">Standard</div>
+                                </div>
+                                <div style="width:160px"><button class="btn" onclick="purchasePro()">Buy Pro</button>
+                                </div>
+                            </div>
+                            <div class="small">After successful payment you will be redirected to Dashboard with Pro
+                                features enabled.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE: DASHBOARD -->
+                <section id="page-dashboard" class="page" aria-labelledby="dashTitle">
+                    <div class="card stage">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <div>
+                                <div id="timeNow" style="font-size:18px;font-weight:800">--:--</div>
+                                <div id="dateNow" class="small">--</div>
+                                <h3 id="welcomeText" style="margin:6px 0 0 0">Welcome to MedsAI Pro</h3>
+                            </div>
+                            <div style="text-align:right">
+                                <div id="logoPreview"
+                                    style="width:64px;height:64px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent-b),var(--accent-a));color:#041f20;font-weight:900">
+                                    M+</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:12px;display:flex;gap:12px;align-items:center">
+                            <div style="flex:1">
+                                <div class="actions">
+                                    <div class="action" onclick="navigateTo('page-doctors')">
+                                        <div
+                                            style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent-a),var(--accent-b));display:grid;place-items:center;color:#052d2e;font-weight:900">
+                                            DR</div>
+                                        <div>
+                                            <strong>Doctors</strong>
+                                            <div class="small">Call / Video / Book</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="action" onclick="navigateTo('page-prescription')">
+                                        <div
+                                            style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#fff2cc,#ffd27a);display:grid;place-items:center;color:#5a3800;font-weight:900">
+                                            📄</div>
+                                        <div>
+                                            <strong>Prescriptions</strong>
+                                            <div class="small">Upload & Keep</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="action" onclick="navigateTo('page-health')">
+                                        <div
+                                            style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#c7b8ff,#9f7cff);display:grid;place-items:center;color:#2f133d;font-weight:900">
+                                            📈</div>
+                                        <div>
+                                            <strong>Health Reports</strong>
+                                            <div class="small">BP / Sugar / Weight</div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div style="width:260px;text-align:right">
+                                <div class="small">Subscription</div>
+                                <div style="margin-top:6px">
+                                    <button class="btn cta" onclick="navigateTo('page-pro')">Manage • Go Pro</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:12px; display:flex; gap:12px; align-items:flex-start;">
+                            <div style="flex:1">
+                                <input id="quickQuestion" class="input"
+                                    placeholder="Ask MedsAI (non-diagnostic) e.g. 'fever'" />
+                                <div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
+                                    <button class="btn" onclick="askQuick()">Ask</button>
+                                    <button class="btn ghost" onclick="logout()">Logout</button>
+                                </div>
+                                <div id="quickReply" class="small" style="margin-top:10px"></div>
+                            </div>
+
+                            <div style="width:240px">
+                                <div class="card" style="padding:12px;text-align:center">
+                                    <div style="font-weight:800">Emergency</div>
+                                    <div class="small" style="margin-top:6px">Press SOS in case of emergency</div>
+                                    <div style="margin-top:10px">
+                                        <button class="btn danger" onclick="handleSOSClick()">Send SOS</button>
+                                    </div>
+                                    <div style="margin-top:12px">
+                                        <button class="btn ghost" onclick="navigateTo('page-emergency-log')">Emergency
+                                            History</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- PAGE: DOCTORS -->
+                <section id="page-doctors" class="page" aria-labelledby="doctorsTitle">
+                    <div class="card stage">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <h2 id="doctorsTitle">👨‍⚕️ Doctors & Consult</h2>
+                            <div><button class="btn ghost" onclick="navigateTo('page-dashboard')">⬅ Back</button></div>
+                        </div>
+
+                        <div style="margin-top:10px;display:flex;gap:8px">
+                            <input id="docSearch" class="input" placeholder="Search doctor / specialty / city" />
+                            <button class="btn ghost" onclick="searchDocs()">Search</button>
+                        </div>
+
+                        <div id="docList" style="margin-top:12px"></div>
+                    </div>
+                </section>
+
+                <!-- PAGE: DOCTOR DETAIL -->
+                <section id="page-doctor-detail" class="page" aria-labelledby="docDetailTitle">
+                    <div class="card stage">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <div>
+                                <h2 id="docDetailTitle">Doctor</h2>
+                                <div id="docSpec" class="small"></div>
+                            </div>
+                            <div><button class="btn ghost" onclick="navigateTo('page-doctors')">⬅ Back</button></div>
+                        </div>
+
+                        <div id="docDetailArea" style="margin-top:12px"></div>
+                    </div>
+                </section>
+
+                <!-- PAGE: CALL -->
+                <section id="page-call" class="page" aria-labelledby="callTitle">
+                    <div class="card stage">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <h2 id="callTitle">Consultation</h2>
+                            <div><button class="btn ghost" onclick="endCall(true)">End</button></div>
+                        </div>
+
+                        <div id="callArea" style="margin-top:12px"></div>
+                    </div>
+                </section>
+
+                <!-- PAGE: PRESCRIPTION UPLOAD -->
+                <section id="page-prescription" class="page" aria-labelledby="presTitle">
+                    <div class="card stage">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <h2 id="presTitle">📄 Upload Prescription</h2>
+                            <div><button class="btn ghost" onclick="navigateTo('page-dashboard')">⬅ Back</button></div>
+                        </div>
+
+                        <div style="margin-top:12px;display:grid;gap:10px">
+                            <p class="small">Take a photo or choose from gallery. Add notes or list medicines detected.
+                                Save to your prescriptions.</p>
+
+                            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                <label class="btn ghost" style="cursor:pointer">
+                                    📸 Capture / Choose
+                                    <input id="prescFile" type="file" accept="image/*" capture="environment"
+                                        style="display:none" onchange="previewPrescription(event)" />
+                                </label>
+                                <button class="btn" onclick="triggerPrescFile()">Upload</button>
+                                <button class="btn ghost" onclick="clearPrescPreview()">Clear</button>
+                            </div>
+
+                            <img id="prescPreview" class="presc-preview" style="display:none"
+                                alt="Prescription preview" />
+
+                            <textarea id="prescNotes" class="input"
+                                placeholder="Detected medicines or doctor's instructions. Write each medicine on a new line..."></textarea>
+
+                            <div style="display:flex;gap:8px">
+                                <button class="btn" onclick="savePrescription()">Save Prescription</button>
+                                <button class="btn ghost" onclick="navigateTo('page-prescriptions-list')">View
+                                    All</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE: PRESCRIPTIONS LIST -->
+                <section id="page-prescriptions-list" class="page" aria-labelledby="presListTitle">
+                    <div class="card stage">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <h2 id="presListTitle">📚 Saved Prescriptions</h2>
+                            <div><button class="btn ghost" onclick="navigateTo('page-dashboard')">⬅ Back</button></div>
+                        </div>
+
+                        <div style="margin-top:12px">
+                            <div id="presListArea"></div>
+                            <div style="margin-top:12px">
+                                <button class="btn ghost" onclick="clearAllPrescriptions()">Clear All</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE: HEALTH REPORTS -->
+                <section id="page-health" class="page" aria-labelledby="healthTitle">
+                    <div class="card stage">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <h2 id="healthTitle">📈 Health Reports</h2>
+                            <div><button class="btn ghost" onclick="navigateTo('page-dashboard')">⬅ Back</button></div>
+                        </div>
+
+                        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                            <div>
+                                <h4>Add Record</h4>
+                                <div style="display:grid;gap:8px">
+                                    <input id="hrDate" class="input" type="date" />
+                                    <input id="hrBP" class="input" placeholder="BP (e.g. 120/80)" />
+                                    <input id="hrSugar" class="input" placeholder="Sugar (mg/dL)" />
+                                    <input id="hrWeight" class="input" placeholder="Weight (kg)" />
+                                    <button class="btn" onclick="addHealthRecord()">Add Record</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4>Quick Trends</h4>
+                                <div style="display:grid;gap:8px">
+                                    <div><strong>BP</strong><svg id="sparkBP" class="sparkline"></svg></div>
+                                    <div><strong>Sugar</strong><svg id="sparkSugar" class="sparkline"></svg></div>
+                                    <div><strong>Weight</strong><svg id="sparkWeight" class="sparkline"></svg></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:12px">
+                            <h4>All Records</h4>
+                            <div id="hrList" class="list"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE: EMERGENCY / SOS LOG -->
+                <section id="page-emergency-log" class="page" aria-labelledby="emTitle">
+                    <div class="card stage">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <h2 id="emTitle">🚨 Emergency History</h2>
+                            <div><button class="btn ghost" onclick="navigateTo('page-dashboard')">⬅ Back</button></div>
+                        </div>
+
+                        <div id="emList" style="margin-top:12px"></div>
+                        <div style="margin-top:12px">
+                            <button class="btn ghost" onclick="clearEmergencyLogs()">Clear Logs</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE: RECEIPT (reused) -->
+                <section id="page-receipt" class="page" aria-labelledby="receiptTitle">
+                    <div class="card stage">
+                        <h2 id="receiptTitle">Receipt</h2>
+                        <div id="receiptArea" style="margin-top:12px"></div>
+                        <div style="margin-top:12px">
+                            <button class="btn" onclick="downloadReceipt()">Download Receipt</button>
+                            <button class="btn ghost" onclick="navigateTo('page-dashboard')">Done</button>
+                        </div>
+                    </div>
+                </section>
+
+            </div> <!-- pages end -->
+
+            <div class="footer">MedsAI Pro • Telemedicine • Demo only</div>
+        </div>
+    </div>
+
+    <!-- Pro-level SOS floating -->
+    <div id="sosFab" class="sos-fixed" title="Emergency SOS" role="button" aria-pressed="false"
+        onclick="handleSOSClick()">🚨</div>
+
+    <script>
+        /* ============================================================
+           MedsAI Pro — Final JS
+           - Login, Payment with owner discount
+           - Doctor booking, pay-before-call/video
+           - Prescription upload, save
+           - SOS pro button (animated), logs
+           - Health records + inline sparklines
+           - Simple AI symptom checker
+           ============================================================ */
+
+        /* Storage keys */
+        const K_USERS = 'medsai_final_users_v1';
+        const K_SESS = 'medsai_final_session_v1';
+        const K_BOOK = 'medsai_final_book_v1';
+        const K_CALLS = 'medsai_final_calls_v1';
+        const K_PRESC = 'medsai_final_presc_v1';
+        const K_EMER = 'medsai_final_emerg_v1';
+        const K_HEALTH = 'medsai_final_health_v1';
+
+        /* App-wide constants */
+        const OWNER_PHONE = String(getComputedStyle(document.documentElement).getPropertyValue('--owner-phone') || '9883741189').replace(/[^0-9]/g, '');
+        const PRO_PRICE = Number(getComputedStyle(document.documentElement).getPropertyValue('--pro-price') || 1999);
+        const PRO_OWNER_PRICE = Number(getComputedStyle(document.documentElement).getPropertyValue('--pro-owner-price') || 1499);
+
+        /* Helper: localStorage wrappers */
+        function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+        function load(key, fallback) { try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch (e) { return fallback; } }
+        function setSession(obj) { sessionStorage.setItem(K_SESS, JSON.stringify(obj)); }
+        function getSession() { try { return JSON.parse(sessionStorage.getItem(K_SESS) || 'null'); } catch (e) { return null; } }
+        function clearSession() { sessionStorage.removeItem(K_SESS); }
+
+        /* DOM shortcut */
+        function $(id) { return document.getElementById(id); }
+
+        /* Navigation */
+        function navigateTo(id) {
+            const cur = document.querySelector('.page.active');
+            const next = $(id);
+            if (!next) return console.warn('No page', id);
+            if (cur) { cur.classList.remove('active'); cur.classList.add('leaving'); setTimeout(() => cur.classList.remove('leaving'), 520); }
+            next.classList.add('active');
+            setTimeout(() => showStage(next), 80);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        function showStage(pageEl) {
+            if (typeof pageEl === 'string') pageEl = $(pageEl);
+            if (!pageEl) return;
+            pageEl.classList.remove('show-stage');
+            const items = pageEl.querySelectorAll('.stage');
+            items.forEach((el, idx) => el.style.transitionDelay = `${idx * 60}ms`);
+            setTimeout(() => pageEl.classList.add('show-stage'), 80);
+        }
+
+        /* Language (small) */
+        let LANG = 'en';
+        const STR = {
+            en: { loginNote: 'Enter phone & password (demo).', welcome: 'Welcome to MedsAI Pro', no_login: 'Please login first', booking_confirm: 'Booking confirmed', order_placed: 'Order placed', loc_err: 'Location permission denied or error', sending: 'Sending location...', sent_ok: 'Location shared.' },
+            bn: { loginNote: 'ফোন ও পাসওয়ার্ড (ডেমো)।', welcome: 'স্বাগতম MedsAI Pro', no_login: 'অনুগ্রহ করে আগে লগইন করুন', booking_confirm: 'বুকিং নিশ্চিত হয়েছে', order_placed: 'অর্ডার সফল হয়েছে', loc_err: 'লোকেশন অনুমতি নেই', sending: 'লোকেশন পাঠানো হচ্ছে...', sent_ok: 'লোকেশন শেয়ার করা হয়েছে।' },
+            hi: { loginNote: 'फोन और पासवर्ड (डेमो)।', welcome: 'स्वागत है MedsAI Pro', no_login: 'कृपया पहले लॉगिन करें', booking_confirm: 'बुकिंग पुष्टि हुई', order_placed: 'ऑर्डर सफलतापूर्वक', loc_err: 'लोकेशन अनुमति नहीं', sending: 'लोकेशन भेजा जा रहा है...', sent_ok: 'लोकेशन साझा की गई।' }
+        };
+        function t(k) { return (STR[LANG] && STR[LANG][k]) || STR['en'][k] || k; }
+
+        /* App init */
+        window.addEventListener('load', () => {
+            const app = $('app'); setTimeout(() => app.style.transform = 'translateY(0)', 120);
+            const sel = $('lang'); if (sel) { LANG = sel.value; sel.addEventListener('change', e => { LANG = e.target.value; updateTexts(); }); updateTexts(); }
+            const pp = $('proPhone'); if (pp) { pp.addEventListener('input', updateProPrice); updateProPrice(); }
+            // restore session
+            const s = getSession();
+            if (s && s.phone) {
+                $('userBadge').innerText = s.name + (s.isPro ? ' (Pro)' : '');
+                if (s.isPro) navigateTo('page-dashboard'); else navigateTo('page-pro');
+                if ($('proPhone')) $('proPhone').value = s.phone;
+            } else navigateTo('page-login');
+            renderDoctors();
+            renderPrescriptionsList();
+            renderEmergencyList();
+            renderHealthList();
+            updateClock();
+            setInterval(updateClock, 1000);
+        });
+
+        /* update visible texts */
+        function updateTexts() { $('loginNote').innerText = t('loginNote'); $('welcomeText').innerText = t('welcome'); }
+
+        /* Clock */
+        function updateClock() {
+            const now = new Date();
+            $('timeNow').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            $('dateNow').innerText = now.toLocaleDateString();
+        }
+
+        /* ---------- LOGIN & SESSION ---------- */
+        function fillDemo() {
+            $('loginPhone').value = OWNER_PHONE;
+            $('loginName').value = 'Demo Senior';
+            $('loginPass').value = 'demo123';
+        }
+        function doLogin() {
+            const phone = $('loginPhone').value.trim();
+            const name = $('loginName').value.trim() || 'User';
+            const pass = $('loginPass').value;
+            if (!phone || !pass) { alert(t('loginNote')); return; }
+            const users = load(K_USERS, {});
+            if (!users[phone]) users[phone] = { phone, name, pass, isPro: false };
+            else { users[phone].name = name; users[phone].pass = pass; }
+            save(K_USERS, users);
+            setSession(users[phone]);
+            $('userBadge').innerText = name;
+            $('proPhone').value = phone;
+            updateProPrice();
+            navigateTo('page-pro');
+        }
+        function skipToPro() { $('loginPhone').value = OWNER_PHONE; $('loginName').value = 'Demo Senior'; doLogin(); }
+
+        /* ---------- PRO / PAYMENT ---------- */
+        function updateProPrice() {
+            const phone = $('proPhone') ? $('proPhone').value.trim() : '';
+            if (phone && phone === OWNER_PHONE) {
+                $('proPrice').innerText = '₹' + PRO_OWNER_PRICE;
+                $('proNote').innerText = 'Owner discount applied';
+            } else {
+                $('proPrice').innerText = '₹' + PRO_PRICE;
+                $('proNote').innerText = 'Standard';
+            }
+        }
+        function purchasePro() {
+            const sess = getSession();
+            if (!sess) { alert(t('no_login')); navigateTo('page-login'); return; }
+            const phone = $('proPhone').value.trim();
+            const price = (phone === OWNER_PHONE) ? PRO_OWNER_PRICE : PRO_PRICE;
+            if (!confirm(`Confirm purchase of MedsAI Pro for ₹${price}? (Demo)`)) return;
+            setTimeout(() => {
+                const users = load(K_USERS, {});
+                const s = getSession();
+                if (s && users[s.phone]) { users[s.phone].isPro = true; save(K_USERS, users); s.isPro = true; setSession(s); $('userBadge').innerText = s.name + ' (Pro)'; }
+                // record as order item
+                const calls = load(K_CALLS, []); calls.push({ id: Date.now(), type: 'pro_purchase', user: s.phone, price, time: new Date().toISOString() }); save(K_CALLS, calls);
+                renderReceipt({ type: 'Pro Subscription', price, time: new Date().toISOString() });
+                navigateTo('page-receipt');
+            }, 800);
+        }
+
+        /* ---------- DOCTORS ---------- */
+        const DOCTORS = [
+            { id: 201, name: 'Dr. Meera Sharma', spec: 'Neurologist', city: 'Mumbai', rating: 4.95, fees: 499, slots: [{ from: '09:00', to: '12:00' }, { from: '17:00', to: '20:00' }], video: true, audio: true, bio: 'Neuro specialist — memory, stroke, Parkinsons.' },
+            { id: 202, name: 'Dr. Arjun Roy', spec: 'Orthopedic', city: 'Delhi', rating: 4.78, fees: 699, slots: [{ from: '18:00', to: '21:00' }], video: true, audio: true, bio: 'Joints & bones expert. 12 yrs exp.' },
+            { id: 203, name: 'Dr. Sneha Das', spec: 'General Physician', city: 'Kolkata', rating: 4.82, fees: 299, slots: [{ from: '08:00', to: '11:30' }, { from: '14:00', to: '16:00' }], video: false, audio: true, bio: 'Family physician focused on geriatric care.' },
+            { id: 204, name: 'Dr. Rohan Sen', spec: 'Cardiologist', city: 'Chennai', rating: 4.9, fees: 799, slots: [{ from: '10:00', to: '13:00' }], video: true, audio: true, bio: 'Heart specialist — arrhythmia & hypertension.' }
+        ];
+
+        function timeToMinutes(t) { const [hh, mm] = t.split(':').map(x => parseInt(x, 10)); return hh * 60 + mm; }
+        function nowMinutes() { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
+        function slotIsNow(slot) { const from = timeToMinutes(slot.from), to = timeToMinutes(slot.to); const now = nowMinutes(); return now >= from && now < to; }
+
+        function renderDoctors(list) {
+            const arr = list || DOCTORS;
+            const el = $('docList'); el.innerHTML = '';
+            arr.forEach(d => {
+                const row = document.createElement('div'); row.className = 'doc-row';
+                const avaNow = d.slots.some(s => slotIsNow(s));
+                const slotsTxt = d.slots.map(s => `${s.from}–${s.to}`).join(' | ');
+                row.innerHTML = `
+      <div class="doc-avatar">${d.name.split(' ')[1] ? d.name.split(' ')[1][0] : d.name[0]}</div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <strong>${d.name}</strong>
+            <div class="small">${d.spec} • ${d.city} • ${d.rating}⭐</div>
+          </div>
+          <div style="text-align:right">
+            <div class="small">₹${d.fees}</div>
+            ${avaNow ? `<div class="badge-aval">Available now</div>` : `<div class="badge-off">Not now</div>`}
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+          <button class="btn" onclick="viewDoctor(${d.id})">View</button>
+          <button class="btn ghost" onclick="bookDoctor(${d.id})">Book</button>
+          <button class="btn ghost" onclick="initiateCall(${d.id}, 'audio')" ${d.audio ? '' : 'disabled'}>📞 Call</button>
+          <button class="btn" onclick="initiateCall(${d.id}, 'video')" ${d.video ? '' : 'disabled'}>🎥 Video</button>
+        </div>
+        <div class="small" style="margin-top:10px">Slots: ${slotsTxt}</div>
+      </div>
+    `;
+                el.appendChild(row);
+            });
+        }
+
+        function searchDocs() {
+            const q = $('docSearch').value.trim().toLowerCase();
+            if (!q) { renderDoctors(); return; }
+            const res = DOCTORS.filter(d => d.name.toLowerCase().includes(q) || d.spec.toLowerCase().includes(q) || d.city.toLowerCase().includes(q));
+            renderDoctors(res);
+        }
+
+        function viewDoctor(id) {
+            const d = DOCTORS.find(x => x.id === id); if (!d) return;
+            $('docDetailTitle').innerText = d.name;
+            $('docSpec').innerText = `${d.spec} • ${d.city} • ${d.rating}⭐ • ₹${d.fees}`;
+            const area = $('docDetailArea');
+            let html = `<div style="display:flex;gap:12px;align-items:flex-start">
+    <div style="width:120px"><div class="doc-avatar" style="width:120px;height:120px;font-size:36px">${d.name.split(' ')[1] ? d.name.split(' ')[1][0] : d.name[0]}</div></div>
+    <div style="flex:1">
+      <p style="margin:0">${d.bio}</p>
+      <p class="small" style="margin-top:6px">Fees: ₹${d.fees} • Slots: ${d.slots.map(s => s.from + '–' + s.to).join(' | ')}</p>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button class="btn" onclick="initiateCall(${d.id}, 'video')">🎥 Video Consult</button>
+        <button class="btn" onclick="initiateCall(${d.id}, 'audio')">📞 Audio Consult</button>
+        <button class="btn ghost" onclick="bookDoctor(${d.id})">Book Slot</button>
+      </div>
+    </div>
+  </div>`;
+            area.innerHTML = html;
+            navigateTo('page-doctor-detail');
+        }
+
+        /* ---------- Booking ---------- */
+        function bookDoctor(id) {
+            const d = DOCTORS.find(x => x.id === id); if (!d) return;
+            const options = d.slots.map((s, i) => `${i + 1}. ${s.from} - ${s.to}`).join('\n');
+            const pick = prompt(`Pick a slot:\n${options}\n\nEnter slot number`, '1');
+            if (!pick) return;
+            const idx = parseInt(pick, 10) - 1;
+            if (isNaN(idx) || !d.slots[idx]) return alert('Invalid slot');
+            const when = d.slots[idx].from + ' - ' + d.slots[idx].to;
+            const bookings = load(K_BOOK, []);
+            const sess = getSession();
+            if (!sess) { alert(t('no_login')); navigateTo('page-login'); return; }
+            bookings.push({ id: Date.now(), docId: d.id, doctor: d.name, when, user: sess.phone, time: new Date().toISOString() });
+            save(K_BOOK, bookings);
+            alert(`${t('booking_confirm')}\n${d.name} • ${when}`);
+        }
+
+        /* ---------- Call flow (pay-first) ---------- */
+        let ACTIVE_CALL = null;
+        function initiateCall(docId, mode) {
+            const sess = getSession();
+            if (!sess) { alert(t('no_login')); navigateTo('page-login'); return; }
+            const d = DOCTORS.find(x => x.id === docId); if (!d) return;
+            if (mode === 'video' && !d.video) { alert('Doctor does not support video'); return; }
+            if (mode === 'audio' && !d.audio) { alert('Doctor does not support audio'); return; }
+            const availableNow = d.slots.some(s => slotIsNow(s));
+            if (!availableNow && !confirm('Doctor not available now. You may still request — proceed?')) return;
+            if (!confirm(`Consultation fee ₹${d.fees}. Proceed to pay & connect? (Demo)`)) return;
+            // simulate payment
+            setTimeout(() => {
+                const call = { id: Date.now(), doctor: d.name, docId, user: sess.phone, mode, fees: d.fees, status: 'initiated', startTime: new Date().toISOString(), timer: 0 };
+                const calls = load(K_CALLS, []); calls.push(call); save(K_CALLS, calls);
+                ACTIVE_CALL = call;
+                openCallUI(call);
+                if (availableNow) {
+                    setTimeout(() => connectCall(call), 1200 + Math.random() * 1200);
+                } else {
+                    setTimeout(() => {
+                        if (!ACTIVE_CALL || ACTIVE_CALL.id !== call.id) return;
+                        if (confirm('Doctor accepted your scheduled request (simulated). Connect now?')) connectCall(call); else rejectCall(call);
+                    }, 6000);
+                }
+            }, 700);
+        }
+
+        function openCallUI(call) {
+            navigateTo('page-call');
+            const area = $('callArea');
+            area.innerHTML = `<div class="small" id="callStatus">Connecting to ${call.doctor}...</div>
+    <div id="callUI" style="margin-top:12px"></div>
+    <div style="margin-top:12px"><button class="btn danger" onclick="endCall()">End Call</button></div>`;
+            renderCallPlaceholder(call);
+        }
+
+        function renderCallPlaceholder(call) {
+            const ui = $('callUI'); ui.innerHTML = '';
+            if (call.mode === 'video') {
+                ui.innerHTML = `<div class="video-wrap">
+      <div class="stream-box" id="remoteStream"><div class="stream-label">Doctor</div><div id="remotePlaceholder" style="color:white;text-align:center"></div></div>
+      <div class="stream-box" id="localStream"><div class="stream-label">You</div><video id="userVideo" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;"></video></div>
+    </div><div class="call-hud"><div class="small">Connecting...</div></div>`;
+                navigator.mediaDevices?.getUserMedia({ video: true, audio: true }).then(s => {
+                    const v = $('userVideo'); if (v) v.srcObject = s;
+                    if (ACTIVE_CALL) ACTIVE_CALL.localStream = s;
+                }).catch(() => { /* ignore */ });
+            } else {
+                ui.innerHTML = `<div style="display:flex;gap:12px;align-items:center">
+      <div style="width:120px"><div class="doc-avatar" style="width:120px;height:120px;font-size:36px">${call.doctor.split(' ')[1] ? call.doctor.split(' ')[1][0] : call.doctor[0]}</div></div>
+      <div>
+        <div style="font-size:18px;font-weight:800">${call.doctor}</div>
+        <div class="small">Audio consultation — connecting...</div>
+      </div>
+    </div>`;
+                navigator.mediaDevices?.getUserMedia({ audio: true }).then(s => {
+                    if (ACTIVE_CALL) ACTIVE_CALL.localStream = s;
+                }).catch(() => { });
+            }
+        }
+
+        function connectCall(call) {
+            if (!ACTIVE_CALL || ACTIVE_CALL.id !== call.id) return;
+            call.status = 'connected'; call.connectedAt = new Date().toISOString();
+            saveCall(call);
+            const status = $('callStatus'); if (status) status.innerText = `Connected with ${call.doctor} — 00:00`;
+            call.timer = 0;
+            call._ti = setInterval(() => {
+                call.timer++;
+                const mm = String(Math.floor(call.timer / 60)).padStart(2, '0'), ss = String(call.timer % 60).padStart(2, '0');
+                const st = $('callStatus'); if (st) st.innerText = `Connected with ${call.doctor} — ${mm}:${ss}`;
+            }, 1000);
+            if (call.mode === 'video' && call.localStream) {
+                const remote = $('remoteStream');
+                remote.innerHTML = '';
+                const dv = document.createElement('video'); dv.autoplay = true; dv.muted = true; dv.playsInline = true; dv.srcObject = call.localStream; dv.style.width = '100%'; dv.style.height = '100%'; dv.style.objectFit = 'cover';
+                remote.appendChild(dv);
+            }
+        }
+
+        function rejectCall(call) {
+            call.status = 'rejected'; saveCall(call); alert('Doctor rejected the request (simulated).'); endCall();
+        }
+        function saveCall(call) {
+            const calls = load(K_CALLS, []);
+            const idx = calls.findIndex(c => c.id === call.id);
+            if (idx >= 0) calls[idx] = call; else calls.push(call);
+            save(K_CALLS, calls);
+        }
+        function endCall(force) {
+            if (!ACTIVE_CALL) { navigateTo('page-dashboard'); return; }
+            const call = ACTIVE_CALL;
+            if (call.localStream) {
+                call.localStream.getTracks().forEach(t => t.stop());
+                call.localStream = null;
+            }
+            if (call._ti) clearInterval(call._ti);
+            call.endedAt = new Date().toISOString();
+            if (call.status === 'connected') call.status = 'finished'; else if (!call.status) call.status = 'ended';
+            saveCall(call);
+            const receipt = { type: 'Consultation', doctor: call.doctor, mode: call.mode, fees: call.fees, duration_secs: call.timer || 0, time: call.startTime };
+            renderReceipt(receipt);
+            ACTIVE_CALL = null;
+            navigateTo('page-receipt');
+        }
+
+        /* ---------- RECEIPTS ---------- */
+        function renderReceipt(r) {
+            const area = $('receiptArea'); if (!area) return;
+            let html = `<div style="padding:12px;background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:10px">
+    <div style="font-weight:800;font-size:18px">Receipt</div>`;
+            if (r.type) html += `<div style="margin-top:8px"><b>Type:</b> ${r.type}</div>`;
+            if (r.doctor) html += `<div><b>Doctor:</b> ${r.doctor}</div>`;
+            if (r.mode) html += `<div><b>Mode:</b> ${r.mode}</div>`;
+            html += `<div><b>Amount:</b> ₹${r.price || r.fees}</div>`;
+            if (r.duration_secs !== undefined) html += `<div><b>Duration:</b> ${Math.floor((r.duration_secs || 0) / 60)}m ${(r.duration_secs || 0) % 60}s</div>`;
+            html += `<div><b>Time:</b> ${new Date(r.time).toLocaleString()}</div>`;
+            html += `</div>`;
+            area.innerHTML = html;
+            const ords = load(K_CALLS, []); ords.push({ ...r, id: Date.now() }); save(K_CALLS, ords);
+        }
+        function downloadReceipt() {
+            const area = $('receiptArea'); if (!area) return;
+            const txt = area.innerText || area.textContent;
+            const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'medsai_receipt.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        }
+
+        /* ---------- PRESCRIPTION ---------- */
+        function triggerPrescFile() { $('prescFile').click(); }
+        function previewPrescription(ev) {
+            const f = ev.target.files && ev.target.files[0];
+            if (!f) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = e.target.result;
+                const ip = $('prescPreview'); ip.src = img; ip.style.display = 'block'; ip.dataset.raw = img;
+            };
+            reader.readAsDataURL(f);
+        }
+        function clearPrescPreview() { const ip = $('prescPreview'); ip.src = ''; ip.style.display = 'none'; ip.dataset.raw = ''; $('prescNotes').value = ''; }
+        function savePrescription() {
+            const imgData = $('prescPreview').dataset.raw || '';
+            const notes = $('prescNotes').value.trim();
+            if (!imgData && !notes) { alert('Please upload an image or add notes'); return; }
+            const list = load(K_PRESC, []);
+            const meds = notes.split('\n').map(s => s.trim()).filter(Boolean);
+            const rec = { id: Date.now(), image: imgData, notes, meds, time: new Date().toISOString() };
+            list.push(rec); save(K_PRESC, list);
+            clearPrescPreview();
+            alert('Prescription saved (local)');
+            renderPrescriptionsList();
+            navigateTo('page-prescriptions-list');
+        }
+        function renderPrescriptionsList() {
+            const el = $('presListArea'); if (!el) return;
+            const list = load(K_PRESC, []);
+            el.innerHTML = '';
+            if (!list.length) { el.innerHTML = '<div class="small">No prescriptions saved</div>'; return; }
+            list.slice().reverse().forEach(p => {
+                const d = document.createElement('div'); d.className = 'list-item';
+                const medsTxt = (p.meds && p.meds.length) ? `<div class="small">Medicines: ${p.meds.join(', ')}</div>` : `<div class="small">No medicines listed</div>`;
+                d.innerHTML = `<div style="display:flex;gap:12px;align-items:center">
+      <div style="width:84px"><img src="${p.image || ''}" style="width:84px;height:64px;object-fit:cover;border-radius:8px;display:${p.image ? 'block' : 'none'}" /></div>
+      <div>
+        <strong>Prescription ${p.id}</strong>
+        <div class="small">${new Date(p.time).toLocaleString()}</div>
+        ${medsTxt}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+      <button class="btn ghost" onclick='viewPrescription("${p.id}")'>View</button>
+      <button class="btn" onclick='deletePrescription("${p.id}")'>Delete</button>
+    </div>`;
+                el.appendChild(d);
+            });
+        }
+        function viewPrescription(id) {
+            const list = load(K_PRESC, []);
+            const p = list.find(x => String(x.id) === String(id));
+            if (!p) return alert('Not found');
+            let html = `<div style="display:grid;gap:12px">
+    ${p.image ? `<img src="${p.image}" style="max-width:100%;border-radius:12px;"/>` : ''}
+    <div><strong>Saved:</strong> ${new Date(p.time).toLocaleString()}</div>
+    <div><strong>Notes / Medicines</strong></div>
+    <div style="padding:12px;border-radius:10px;background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03)">${(p.notes || '<span class="small">No notes</span>')}</div>
+    <div style="display:flex;gap:8px"><button class="btn" onclick="downloadPrescription('${p.id}')">Download</button><button class="btn ghost" onclick="navigateTo('page-prescriptions-list')">Close</button></div>
+  </div>`;
+            $('receiptArea').innerHTML = html;
+            navigateTo('page-receipt');
+        }
+        function deletePrescription(id) {
+            if (!confirm('Delete this prescription?')) return;
+            let list = load(K_PRESC, []);
+            list = list.filter(x => String(x.id) !== String(id));
+            save(K_PRESC, list);
+            renderPrescriptionsList();
+        }
+        function clearAllPrescriptions() { if (!confirm('Clear all saved prescriptions?')) return; save(K_PRESC, []); renderPrescriptionsList(); }
+        function downloadPrescription(id) {
+            const list = load(K_PRESC, []);
+            const p = list.find(x => String(x.id) === String(id));
+            if (!p) return alert('Not found');
+            const lines = [`Prescription ID: ${p.id}`, `Saved: ${new Date(p.time).toLocaleString()}`, '', 'Notes / Medicines:', p.notes || '(none)'];
+            const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `prescription_${p.id}.txt`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+            if (p.image) { const a2 = document.createElement('a'); a2.href = p.image; a2.download = `prescription_${p.id}.png`; document.body.appendChild(a2); a2.click(); a2.remove(); }
+        }
+
+        /* ---------- EMERGENCY / SOS ---------- */
+        function handleSOSClick() {
+            const sess = getSession();
+            if (!sess) { if (confirm('Please login to use SOS. Go to login?')) navigateTo('page-login'); return; }
+            if (!sess.isPro) { if (confirm('SOS is Pro feature. Upgrade now?')) navigateTo('page-pro'); return; }
+            // show confirmation
+            if (!confirm('Send Emergency SOS with your current location to saved contacts? (Demo)')) return;
+            sendSOS();
+        }
+        function sendSOS() {
+            const sess = getSession();
+            if (!sess) { alert(t('no_login')); return; }
+            if (!navigator.geolocation) { alert(t('loc_err')); return; }
+            const fab = $('sosFab'); fab.setAttribute('aria-pressed', 'true'); fab.style.transform = 'scale(0.96)';
+            navigator.geolocation.getCurrentPosition(pos => {
+                const lat = pos.coords.latitude.toFixed(6), lon = pos.coords.longitude.toFixed(6);
+                const logs = load(K_EMER, []);
+                const rec = { id: Date.now(), user: sess.phone, lat, lon, time: new Date().toISOString() };
+                logs.push(rec); save(K_EMER, logs);
+                alert(`Emergency alert sent!\n${lat}, ${lon}`);
+                renderEmergencyList();
+                setTimeout(() => { fab.setAttribute('aria-pressed', 'false'); fab.style.transform = 'scale(1)'; }, 800);
+            }, err => {
+                alert(t('loc_err'));
+                fab.setAttribute('aria-pressed', 'false'); fab.style.transform = 'scale(1)';
+            }, { timeout: 12000 });
+        }
+        function renderEmergencyList() {
+            const el = $('emList'); if (!el) return;
+            const logs = load(K_EMER, []);
+            el.innerHTML = '';
+            if (!logs.length) { el.innerHTML = '<div class="small">No emergency logs</div>'; return; }
+            logs.slice().reverse().forEach(l => {
+                const d = document.createElement('div'); d.className = 'list-item';
+                d.innerHTML = `<div><strong>SOS • ${new Date(l.time).toLocaleString()}</strong><div class="small">Lat: ${l.lat}, Lon: ${l.lon}</div></div>
+      <div><button class="btn ghost" onclick='shareSOS("${l.id}")'>Share</button></div>`;
+                el.appendChild(d);
+            });
+        }
+        function shareSOS(id) {
+            const logs = load(K_EMER, []);
+            const l = logs.find(x => String(x.id) === String(id));
+            if (!l) return alert('Not found');
+            const text = `Emergency: ${l.user} at ${l.lat},${l.lon} (${new Date(l.time).toLocaleString()})`;
+            if (navigator.share) { navigator.share({ title: 'SOS', text }).catch(() => { }); } else { prompt('Copy to share', text); }
+        }
+        function clearEmergencyLogs() { if (!confirm('Clear all emergency logs?')) return; save(K_EMER, []); renderEmergencyList(); }
+
+        /* ---------- HEALTH RECORDS (simple) ---------- */
+        function addHealthRecord() {
+            const date = $('hrDate').value || new Date().toISOString().slice(0, 10);
+            const bp = $('hrBP').value.trim();
+            const sugar = $('hrSugar').value.trim();
+            const weight = $('hrWeight').value.trim();
+            if (!bp && !sugar && !weight) return alert('Enter at least one field');
+            const recs = load(K_HEALTH, []);
+            recs.push({ id: Date.now(), date, bp, sugar: sugar ? Number(sugar) : null, weight: weight ? Number(weight) : null });
+            save(K_HEALTH, recs);
+            $('hrBP').value = ''; $('hrSugar').value = ''; $('hrWeight').value = '';
+            renderHealthList(); alert('Record saved');
+        }
+        function renderHealthList() {
+            const el = $('hrList'); if (!el) return;
+            const recs = load(K_HEALTH, []);
+            el.innerHTML = '';
+            if (!recs.length) { el.innerHTML = '<div class="small">No records</div>'; renderSparklines([], [], []); return; }
+            // show last 12 records
+            const last = recs.slice(-12);
+            last.slice().reverse().forEach(r => {
+                const d = document.createElement('div'); d.className = 'list-item';
+                d.innerHTML = `<div><strong>${r.date}</strong><div class="small">${r.bp ? 'BP: ' + r.bp : ''} ${r.sugar !== null ? '• Sugar: ' + r.sugar : ''} ${r.weight !== null ? '• Weight: ' + r.weight : ''}</div></div>
+      <div><div class="small">${new Date(r.id).toLocaleTimeString()}</div></div>`;
+                el.appendChild(d);
+            });
+            // prepare arrays for sparklines (last -> earliest)
+            const bps = last.map(x => parseBPAvg(x.bp));
+            const sugars = last.map(x => x.sugar === null ? null : x.sugar);
+            const weights = last.map(x => x.weight === null ? null : x.weight);
+            renderSparklines(bps, sugars, weights);
+        }
+        function parseBPAvg(bp) {
+            if (!bp) return null;
+            const m = bp.match(/(\d+)[^\d]+(\d+)/);
+            if (!m) return null;
+            return (Number(m[1]) + Number(m[2])) / 2;
+        }
+        function renderSparklines(bps, sugars, weights) {
+            drawSpark('sparkBP', bps);
+            drawSpark('sparkSugar', sugars);
+            drawSpark('sparkWeight', weights);
+        }
+        function drawSpark(id, arr) {
+            const svg = $(id); if (!svg) return;
+            svg.innerHTML = '';
+            const vals = arr.filter(v => v !== null && v !== undefined);
+            if (!vals.length) {
+                // empty placeholder
+                const ns = 'http://www.w3.org/2000/svg';
+                const msg = document.createElementNS(ns, 'text'); msg.setAttribute('x', '10'); msg.setAttribute('y', '26'); msg.setAttribute('fill', '#7f9ca3'); msg.setAttribute('font-size', '12'); msg.textContent = '—';
+                svg.setAttribute('viewBox', '0 0 200 48'); svg.appendChild(msg);
+                return;
+            }
+            const min = Math.min(...vals), max = Math.max(...vals);
+            const points = vals.map((v, i) => {
+                const x = (i / (vals.length - 1 || 1)) * 200;
+                const y = 8 + (1 - (v - min) / ((max - min) || 1)) * 32;
+                return `${x},${y}`;
+            }).join(' ');
+            const ns = 'http://www.w3.org/2000/svg';
+            svg.setAttribute('viewBox', '0 0 200 48');
+            const poly = document.createElementNS(ns, 'polyline'); poly.setAttribute('points', points); poly.setAttribute('fill', 'none'); poly.setAttribute('stroke', '#7eead9'); poly.setAttribute('stroke-width', '2'); svg.appendChild(poly);
+        }
+
+        /* ---------- AI Symptom Checker (simple canned) ---------- */
+        function askQuick() {
+            const q = $('quickQuestion').value.trim(); if (!q) return;
+            $('quickReply').innerText = 'Thinking...';
+            setTimeout(() => { $('quickReply').innerText = simpleAI(q); $('quickQuestion').value = ''; }, 900);
+        }
+        function simpleAI(q) {
+            q = q.toLowerCase();
+            if (q.includes('fever') || q.includes('জ্বর') || q.includes('bukhar')) return (LANG === 'bn') ? 'সম্ভব জ্বর — বিশ্রাম ও পানি পান করুন।' : (LANG === 'hi') ? 'संभव ज्वर — आराम करें और पानी पिएं।' : 'Possible fever — rest and hydrate.';
+            if (q.includes('cough') || q.includes('কাশি') || q.includes('khansi')) return (LANG === 'bn') ? 'কাশির জন্য ভাপ নিন ও প্রয়োজনে ডাক্তারের পরামর্শ নিন।' : (LANG === 'hi') ? 'खाँसी के लिए भाप लें और डॉक्टर से सलाह लें।' : 'For cough: steam inhalation; seek medical advice if severe.';
+            if (q.includes('chest') || q.includes('dhuk') || q.includes('seene')) return (LANG === 'bn') ? 'Chest pain — জরুরি: নিকটবর্তী কার্ডিওলজিস্টের কাছে যান।' : (LANG === 'hi') ? 'छाती में दर्द — आपातकालीन: कार्डियोलॉजिस्ट से मिलें।' : 'Chest pain — emergency, see cardiologist immediately.';
+            return (LANG === 'bn') ? 'নিশ্চিত নয় — ডাক্তারের কাছে দেখান।' : (LANG === 'hi') ? 'निश्चित नहीं — डॉक्टर से सलाह लें।' : 'Not sure — consult a doctor.';
+        }
+
+        /* ---------- Utility: expose some functions ---------- */
+        window.navigateTo = navigateTo;
+        window.doLogin = doLogin;
+        window.fillDemo = fillDemo;
+        window.skipToPro = skipToPro;
+        window.updateProPrice = updateProPrice;
+        window.purchasePro = purchasePro;
+        window.renderDoctors = renderDoctors;
+        window.searchDocs = searchDocs;
+        window.viewDoctor = viewDoctor;
+        window.bookDoctor = bookDoctor;
+        window.initiateCall = initiateCall;
+        window.endCall = endCall;
+        window.triggerPrescFile = triggerPrescFile;
+        window.previewPrescription = previewPrescription;
+        window.savePrescription = savePrescription;
+        window.renderPrescriptionsList = renderPrescriptionsList;
+        window.handleSOSClick = handleSOSClick;
+        window.sendSOS = sendSOS;
+        window.renderEmergencyList = renderEmergencyList;
+        window.addHealthRecord = addHealthRecord;
+        window.renderHealthList = renderHealthList;
+        window.askQuick = askQuick;
+        window.logout = function () { clearSession(); alert('Logged out (demo)'); location.reload(); };
+
+        /* End JS */
+    </script>
+</body>
+
+</html>

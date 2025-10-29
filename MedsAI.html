@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>MedsAI — Animated Full Pro (Android-bounce) + About</title>
+    <style>
+        /* ===========================================================
+   MedsAI — Animated Full Pro (Android-like bounce edition)
+   + Multilingual About / App Info page
+   - Single-file demo: HTML + CSS + JS
+   - Android-style bounce for panel, pages, buttons, SOS
+   - About page in English / Bengali / Hindi
+   - Original features preserved
+   =========================================================== */
+
+        /* ------------------- Design tokens ------------------- */
+        :root {
+            --bg1: #f4fdff;
+            --bg2: #f7fff7;
+            --glass: rgba(255, 255, 255, 0.92);
+            --card: #ffffff;
+            --primary: #06b6d4;
+            --primary-600: #0891b2;
+            --accent: #0a7f84;
+            --muted: #6b7280;
+            --danger: #ef4444;
+            --danger-dark: #b91c1c;
+            --success: #16a34a;
+            --shadow-lg: 0 22px 60px rgba(6, 30, 40, 0.08);
+            --shadow-md: 0 8px 28px rgba(6, 30, 40, 0.06);
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --ease: cubic-bezier(.2, .9, .28, 1);
+            --maxw: 1120px;
+            --ui-gap: 12px;
+
+            /* bounce tuning for Android-like spring */
+            --spring-duration: 520ms;
+            /* base for spring */
+            --spring-ease: cubic-bezier(.2, .8, .28, 1.2);
+            /* springy */
+            --fast-bounce: 220ms;
+            --btn-press-scale: 0.96;
+            --panel-pop-scale: 1.02;
+            --page-bounce-scale: 1.01;
+        }
+
+        /* ------------------- Base reset ------------------- */
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: linear-gradient(120deg, var(--bg1), var(--bg2));
+            color: #042c2e;
+            -webkit-touch-callout: none;
+            user-select: none;
+            overflow-y: scroll;
+            -webkit-font-variant-ligatures: contextual;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ------------------- Container ------------------- */
+        .app {
+            max-width: var(--maxw);
+            margin: 22px auto;
+            padding: 18px;
+            transform-origin: center top;
+            /* start slightly scaled down for pop-in */
+            transform: scale(.996);
+            opacity: 0;
+            transition: transform .48s var(--spring-ease), opacity .36s ease-out;
+        }
+
+        /* when ready, add this class to pop */
+        .app.pop-in {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            animation: panelPop var(--spring-duration) both;
+        }
+
+        /* panel (glass) */
+        .panel {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.99));
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(6, 30, 40, 0.03);
+            position: relative;
+            overflow: hidden;
+            transform-origin: center top;
+            will-change: transform, box-shadow;
+        }
+
+        /* panel pop keyframes (Android-like spring) */
+        @keyframes panelPop {
+            0% {
+                transform: translateY(8px) scale(.996);
+                opacity: 0;
+            }
+
+            40% {
+                transform: translateY(-6px) scale(1.02);
+                opacity: 1;
+            }
+
+            70% {
+                transform: translateY(3px) scale(.995);
+            }
+
+            100% {
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ------------------- Header ------------------- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            transform-origin: top;
+            animation: headerIn .6s var(--ease) both;
+        }
+
+        @keyframes headerIn {
+            from {
+                opacity: 0;
+                transform: translateY(-12px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .brand .logo-mini {
+            width: 46px;
+            height: 46px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            box-shadow: 0 8px 22px rgba(6, 153, 170, 0.12);
+            color: white;
+            font-weight: 900;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 20px;
+            letter-spacing: 0.2px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .brand p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        /* controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .badge {
+            background: linear-gradient(90deg, #fff, #f6fffe);
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid #e6f4f6;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .select {
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid #e6f4f6;
+        }
+
+        /* ------------------- Splash (app opening) ------------------- */
+        .splash {
+            position: absolute;
+            inset: 18px 18px auto 18px;
+            height: 44vh;
+            min-height: 260px;
+            max-height: 440px;
+            border-radius: calc(var(--radius-lg) - 4px);
+            display: grid;
+            place-items: center;
+            z-index: 60;
+            background: radial-gradient(800px 200px at 10% 20%, rgba(6, 182, 212, 0.06), transparent 10%),
+                linear-gradient(180deg, rgba(6, 182, 212, 0.04), rgba(10, 127, 132, 0.02));
+            transition: transform .6s var(--spring-ease), opacity .45s var(--ease);
+            box-shadow: 0 20px 60px rgba(6, 30, 40, 0.04);
+        }
+
+        .splash.hidden {
+            opacity: 0;
+            transform: translateY(-26px) scale(.995);
+            pointer-events: none;
+        }
+
+        /* splash logo */
+        .logo-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-box {
+            width: 120px;
+            height: 120px;
+            border-radius: 20px;
+            display: grid;
+            place-items: center;
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            box-shadow: 0 20px 40px rgba(6, 153, 170, 0.16);
+            transform-origin: center;
+            animation: logoPop .9s var(--ease) both;
+        }
+
+        @keyframes logoPop {
+            0% {
+                transform: scale(.72) translateY(12px);
+                opacity: 0
+            }
+
+            60% {
+                transform: scale(1.06) translateY(-6px);
+                opacity: 1
+            }
+
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1
+            }
+        }
+
+        .splash .app-name {
+            font-weight: 800;
+            color: #fff;
+            font-size: 18px;
+            letter-spacing: 0.3px;
+        }
+
+        .splash .tag {
+            margin-top: 6px;
+            color: var(--primary-600);
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.96);
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 13px;
+        }
+
+        /* shimmer bg */
+        .splash::before {
+            content: '';
+            position: absolute;
+            left: -60px;
+            top: -40px;
+            width: 420px;
+            height: 420px;
+            filter: blur(8px);
+            background: radial-gradient(circle at 30% 30%, rgba(6, 182, 212, 0.12), transparent 20%), radial-gradient(circle at 70% 70%, rgba(10, 127, 132, 0.08), transparent 12%);
+            transform: rotate(8deg);
+            animation: shimmer 8s linear infinite;
+            opacity: 0.95;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-10px) rotate(6deg);
+            }
+
+            50% {
+                transform: translateX(10px) rotate(6deg);
+            }
+
+            100% {
+                transform: translateX(-10px) rotate(6deg);
+            }
+        }
+
+        /* ------------------- Pages (stacked SPA) ------------------- */
+        .pages {
+            position: relative;
+            min-height: 520px;
+            margin-top: 18px;
+            padding-bottom: 18px;
+        }
+
+        .page {
+            position: absolute;
+            inset: 0;
+            padding: 18px;
+            overflow: auto;
+            opacity: 0;
+            transform: translateY(32px) scale(.996);
+            transition: opacity .48s var(--ease), transform .48s var(--spring-ease);
+            pointer-events: none;
+            will-change: transform, opacity;
+        }
+
+        .page.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+            z-index: 30;
+        }
+
+        /* page leaving gets a little bounce out */
+        .page.leaving {
+            opacity: 0;
+            transform: translateY(-20px) scale(.99);
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        /* page bounce-in (small scale overshoot) */
+        .page.bounce-in {
+            animation: pageBounceIn var(--spring-duration) var(--spring-ease) both;
+        }
+
+        @keyframes pageBounceIn {
+            0% {
+                transform: translateY(22px) scale(.994);
+                opacity: 0;
+            }
+
+            45% {
+                transform: translateY(-8px) scale(1.01);
+                opacity: 1;
+            }
+
+            75% {
+                transform: translateY(3px) scale(.998);
+            }
+
+            100% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* stage-in children reveal */
+        .stage {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all .48s var(--ease);
+        }
+
+        .page.show-stage .stage {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* subtle page header */
+        .page h2,
+        .page h3 {
+            margin: 0 0 8px 0;
+        }
+
+        /* ------------------- Card / controls ------------------- */
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(6, 30, 40, 0.03);
+            box-shadow: var(--shadow-md);
+        }
+
+        .input,
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #e6f4f6;
+            font-size: 15px;
+            background: #fff;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        /* ------------------- Buttons ------------------- */
+        .btn {
+            display: inline-block;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: none;
+            color: white;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 12px 28px rgba(6, 153, 170, 0.12);
+            transition: transform .14s var(--ease), box-shadow .14s var(--ease);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 36px rgba(6, 153, 170, 0.14);
+        }
+
+        .btn:active {
+            transform: translateY(1px) scale(var(--btn-press-scale));
+        }
+
+        /* press-bounce helper (applied by JS for very quick bounce) */
+        .btn.press-bounce {
+            animation: btnPress var(--fast-bounce) cubic-bezier(.2, .9, .2, 1.2) both;
+        }
+
+        @keyframes btnPress {
+            0% {
+                transform: scale(1);
+            }
+
+            30% {
+                transform: scale(var(--btn-press-scale));
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .btn.ghost {
+            background: #fff;
+            color: var(--accent);
+            border: 1px solid rgba(10, 130, 140, 0.08);
+            box-shadow: none;
+        }
+
+        .btn.danger {
+            background: linear-gradient(90deg, var(--danger), var(--danger-dark));
+            box-shadow: 0 12px 28px rgba(239, 68, 68, 0.12);
+        }
+
+        .btn.success {
+            background: linear-gradient(90deg, var(--success), #0f8f52);
+            box-shadow: 0 12px 28px rgba(22, 163, 74, 0.12);
+        }
+
+        /* per-button micro pulse (optional) */
+        .btn.pulse {
+            animation: btnPulse 2.4s var(--ease) infinite;
+        }
+
+        @keyframes btnPulse {
+            0% {
+                transform: translateY(0);
+                box-shadow: 0 8px 24px rgba(6, 153, 170, 0.06);
+            }
+
+            50% {
+                transform: translateY(-3px);
+                box-shadow: 0 18px 40px rgba(6, 153, 170, 0.10);
+            }
+
+            100% {
+                transform: translateY(0);
+                box-shadow: 0 8px 24px rgba(6, 153, 170, 0.06);
+            }
+        }
+
+        /* ------------------- SOS ------------------- */
+        .sos-wrap {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .sos-large {
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            color: white;
+            font-weight: 900;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(180deg, var(--danger), var(--danger-dark));
+            box-shadow: 0 20px 50px rgba(239, 68, 68, 0.18);
+            transition: all .18s;
+            will-change: transform, box-shadow;
+        }
+
+        .sos-large.blink {
+            animation: sosBlink 1.6s ease-in-out infinite;
+        }
+
+        @keyframes sosBlink {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.28);
+                transform: scale(1);
+            }
+
+            50% {
+                box-shadow: 0 0 0 18px rgba(239, 68, 68, 0.06);
+                transform: scale(1.03);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+                transform: scale(1);
+            }
+        }
+
+        /* sos press bounce (stronger) */
+        .sos-large.press-bounce {
+            animation: sosPress .36s cubic-bezier(.2, .9, .28, 1.2) both;
+        }
+
+        @keyframes sosPress {
+            0% {
+                transform: scale(1);
+            }
+
+            35% {
+                transform: scale(0.92);
+            }
+
+            75% {
+                transform: scale(1.06);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* when SOS sent (green flash) */
+        .sos-large.sent {
+            background: linear-gradient(180deg, var(--success), #0f8f52);
+            box-shadow: 0 20px 50px rgba(16, 185, 129, 0.18);
+        }
+
+        /* ------------------- Actions grid ------------------- */
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .action {
+            background: linear-gradient(180deg, #fff, #f7fffe);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            cursor: pointer;
+            border: 1px solid rgba(6, 30, 40, 0.03);
+            transition: transform .12s var(--ease);
+            will-change: transform;
+        }
+
+        .action:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(6, 30, 40, 0.04);
+        }
+
+        .action:active {
+            transform: translateY(2px) scale(.995);
+        }
+
+        /* action press bounce helper */
+        .action.press-bounce {
+            animation: btnPress var(--fast-bounce) cubic-bezier(.2, .9, .2, 1.2) both;
+        }
+
+        .action .icon {
+            font-size: 22px;
+            min-width: 48px;
+            min-height: 48px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            color: white;
+            font-weight: 800;
+        }
+
+        .action .icon.doc {
+            background: linear-gradient(90deg, #06b6d4, #0891b2);
+            box-shadow: 0 6px 18px rgba(6, 153, 170, 0.12);
+        }
+
+        .action .icon.med {
+            background: linear-gradient(90deg, #16a34a, #059669);
+            box-shadow: 0 6px 18px rgba(22, 163, 74, 0.12);
+        }
+
+        .action .icon.rem {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            box-shadow: 0 6px 18px rgba(245, 158, 11, 0.12);
+        }
+
+        .action .icon.ai {
+            background: linear-gradient(90deg, #7c3aed, #5b21b6);
+            box-shadow: 0 6px 18px rgba(124, 58, 237, 0.12);
+        }
+
+        /* ------------------- Lists ------------------- */
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-radius: 10px;
+            background: #fff;
+            border: 1px solid rgba(6, 30, 40, 0.03);
+            margin-top: 8px;
+        }
+
+        /* ------------------- Chatbox / AI ------------------- */
+        .chat {
+            height: 200px;
+            overflow: auto;
+            padding: 8px;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #fbfeff, #f2fbff);
+            border: 1px solid rgba(6, 30, 40, 0.03);
+        }
+
+        .chat .u {
+            background: #e6fbff;
+            padding: 8px;
+            border-radius: 8px;
+            margin-left: auto;
+            display: inline-block;
+            color: #054b5a;
+        }
+
+        .chat .b {
+            background: #fff;
+            padding: 8px;
+            border-radius: 8px;
+            margin-right: auto;
+            display: inline-block;
+            color: #073042;
+        }
+
+        /* ------------------- Footer small note ------------------- */
+        .footer {
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 14px;
+        }
+
+        /* ------------------- Responsive ------------------- */
+        @media (max-width:920px) {
+            .actions {
+                grid-template-columns: 1fr;
+            }
+
+            .brand h1 {
+                font-size: 18px;
+            }
+
+            .splash {
+                height: 36vh;
+                min-height: 240px;
+            }
+
+            .pages {
+                min-height: 640px;
+            }
+        }
+
+        /* ------------------- Accessibility focus ------------------- */
+        :focus {
+            outline: none;
+            box-shadow: 0 0 0 6px rgba(6, 153, 170, 0.06);
+            border-color: var(--primary);
+        }
+
+        .spacer {
+            height: 12px;
+        }
+
+        /* End CSS */
+    </style>
+</head>
+
+<body>
+    <div class="app" id="appRoot" aria-live="polite">
+        <div class="panel" role="application" aria-label="MedsAI Elder Care">
+
+            <!-- Splash -->
+            <div id="splash" class="splash" role="status" aria-live="polite">
+                <div class="logo-wrap" id="splashWrap">
+                    <div class="logo-box" aria-hidden="true">
+                        <!-- Inline Logo SVG (pill + plus) -->
+                        <svg viewBox="0 0 64 64" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true">
+                            <defs>
+                                <linearGradient id="lg" x1="0" x2="1">
+                                    <stop offset="0" stop-color="#06b6d4" />
+                                    <stop offset="1" stop-color="#0a7f84" />
+                                </linearGradient>
+                            </defs>
+                            <rect x="2" y="16" width="40" height="32" rx="16" fill="url(#lg)" />
+                            <path d="M46 18h10v4H50v8h-4v-8H36v-4h10V14h4v4z" fill="#fff" />
+                        </svg>
+                    </div>
+                    <div class="app-name">MedsAI</div>
+                    <div class="tag">Elder Care • AI-Assisted • Quick SOS</div>
+                </div>
+            </div>
+
+            <!-- Header -->
+            <div class="header" role="banner">
+                <div class="brand">
+                    <div class="logo-mini">M</div>
+                    <div>
+                        <h1 id="brandTitle">MedsAI</h1>
+                        <p id="brandSub" class="small">Elder care • Reminders • SOS • Shop</p>
+                    </div>
+                </div>
+
+                <div class="controls" role="navigation" aria-label="Top controls">
+                    <div id="userBadge" class="badge">Guest</div>
+                    <select id="lang" class="select" aria-label="Language select">
+                        <option value="en">English</option>
+                        <option value="bn">বাংলা</option>
+                        <option value="hi">हिन्दी</option>
+                    </select>
+                    <label for="logoUpload" style="display:inline-block;">
+                        <input id="logoUpload" type="file" accept="image/*" style="display:none"
+                            onchange="previewLogo(event)" />
+                        <button class="btn ghost" title="Upload custom logo (not tied to subscription)">Upload
+                            Logo</button>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pages -->
+            <div class="pages" id="pages">
+
+                <!-- PAGE 1: LOGIN -->
+                <section id="page-login" class="page active" role="region" aria-labelledby="loginTitle">
+                    <div class="card stage">
+                        <h2 id="loginTitle">🔐 Login / Register</h2>
+                        <p class="small" id="loginNote">Enter phone number, name & password to continue.</p>
+
+                        <div style="margin-top:12px;display:grid;gap:8px">
+                            <input id="loginPhone" class="input" placeholder="Phone number" type="tel"
+                                aria-label="Phone number" />
+                            <input id="loginName" class="input" placeholder="Full name" aria-label="Full name" />
+                            <input id="loginPass" class="input" placeholder="Password" type="password"
+                                aria-label="Password" />
+                            <div style="display:flex;gap:8px">
+                                <button class="btn" onclick="doLogin(); uiPressEffect(this)">Continue</button>
+                                <button class="btn ghost" onclick="fillDemo(); uiPressEffect(this)">Fill Demo</button>
+                            </div>
+
+                            <!-- NEW: Learn About MedsAI button -->
+                            <button onclick="window.location.href='./MedsAI_pro.html'" class="btn">
+                                🚀 Open MedsAI Pro
+                            </button>
+                            <div style="text-align:center;margin-top:12px">
+                                <button class="btn ghost" onclick="navigateTo('page-about'); uiPressEffect(this)">
+                                    ℹ️ Learn About MedsAI
+                                </button>
+                            </div>
+
+                            <div class="small">After login you'll see subscription page (demo).</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE 2: SUBSCRIPTION -->
+                <section id="page-subscription" class="page" role="region" aria-labelledby="subTitle">
+                    <div class="card stage">
+                        <h2 id="subTitle">💎 Subscription — Premium</h2>
+                        <p class="small" id="subNote">Type <strong>999</strong> and press Subscribe to unlock Premium
+                            features (demo).</p>
+                        <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+                            <input id="subInput" class="input" placeholder="Type 999 then press Enter"
+                                aria-label="Subscription code" />
+                            <button class="btn" onclick="confirmSubscription(); uiPressEffect(this)">Subscribe
+                                ₹999</button>
+                        </div>
+                        <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
+                            <button class="btn ghost" onclick="navigateTo('page-login'); uiPressEffect(this)">⬅
+                                Back</button>
+                            <div class="small">Subscription unlocks SOS & other premium features.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE 3: DASHBOARD -->
+                <section id="page-dashboard" class="page" role="region" aria-labelledby="dashboardTitle">
+                    <div class="card stage">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <div>
+                                <div id="timeNow" style="font-size:18px;font-weight:800">--:--</div>
+                                <div id="dateNow" class="small">--</div>
+                                <h3 id="welcomeText" style="margin:6px 0 0 0">Welcome to MedsAI</h3>
+                            </div>
+                            <div style="text-align:right">
+                                <div id="logoPreview"
+                                    style="width:56px;height:56px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(90deg,var(--primary),var(--accent));color:white;font-weight:800">
+                                    M</div>
+                            </div>
+                        </div>
+
+                        <div class="sos-wrap">
+                            <button id="sosBtn" class="sos-large blink"
+                                onclick="sendSOS(); uiPressEffect(this, true)">🚨 SOS</button>
+                        </div>
+                        <div id="sosStatus" class="small" style="text-align:center;margin-bottom:8px">Status: idle</div>
+
+                        <div class="actions" role="list">
+                            <div class="action stage" role="listitem" onclick="openDoctor(); uiPressEffect(this)">
+                                <div class="icon doc">👨‍⚕️</div>
+                                <div><strong>Book Doctor</strong>
+                                    <div class="small">Search & book nearby doctors</div>
+                                </div>
+                            </div>
+
+                            <div class="action stage" role="listitem" onclick="openBuy(); uiPressEffect(this)">
+                                <div class="icon med">💊</div>
+                                <div><strong>Buy Medicine</strong>
+                                    <div class="small">Search, cart & orders</div>
+                                </div>
+                            </div>
+
+                            <div class="action stage" role="listitem" onclick="openReminder(); uiPressEffect(this)">
+                                <div class="icon rem">⏰</div>
+                                <div><strong>Set Reminder</strong>
+                                    <div class="small">AM/PM & notifications</div>
+                                </div>
+                            </div>
+
+                            <div class="action stage" role="listitem" onclick="openAI(); uiPressEffect(this)">
+                                <div class="icon ai">🤖</div>
+                                <div><strong>Ask MedsAI</strong>
+                                    <div class="small">AI advisor (demo)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:12px">
+                            <input id="quickQuestion" class="input" placeholder="Ask MedsAI e.g. 'fever, cough'"
+                                aria-label="Quick question" />
+                            <div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
+                                <button class="btn" onclick="askQuick(); uiPressEffect(this)">Ask</button>
+                                <button class="btn ghost" onclick="logout(); uiPressEffect(this)">Logout</button>
+                            </div>
+                            <div id="quickReply" class="small" style="margin-top:10px"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE 4: DOCTOR -->
+                <section id="page-doctor" class="page" role="region" aria-labelledby="doctorTitle">
+                    <div class="card stage">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <h3 id="doctorTitle">👨‍⚕️ Doctor Booking</h3>
+                            <div><button class="btn ghost" onclick="navigateTo('page-dashboard'); uiPressEffect(this)">⬅
+                                    Back</button></div>
+                        </div>
+
+                        <div style="margin-top:10px;display:grid;gap:8px">
+                            <div style="display:flex;gap:8px">
+                                <input id="docSearch" class="input" placeholder="Search doctor / specialty / city" />
+                                <button class="btn" onclick="searchDoctors(); uiPressEffect(this)">Search</button>
+                            </div>
+
+                            <div id="docResults" style="margin-top:8px"></div>
+
+                            <hr style="margin:12px 0" />
+                            <h4>Your Bookings</h4>
+                            <div id="bookings" class="list"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE 5: REMINDER -->
+                <section id="page-reminder" class="page" role="region" aria-labelledby="reminderTitle">
+                    <div class="card stage">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <h3 id="reminderTitle">⏰ Medicine Reminders</h3>
+                            <div><button class="btn ghost" onclick="navigateTo('page-dashboard'); uiPressEffect(this)">⬅
+                                    Back</button></div>
+                        </div>
+
+                        <div style="margin-top:10px;display:grid;grid-template-columns:1fr 140px 120px;gap:8px">
+                            <input id="remMed" class="input" placeholder="Medicine name" />
+                            <input id="remTime" class="input" type="time" />
+                            <select id="remMode" class="input">
+                                <option value="24">24-hour</option>
+                                <option value="ampm">AM/PM</option>
+                            </select>
+                        </div>
+
+                        <div style="display:flex;gap:10px;margin-top:10px">
+                            <button class="btn" onclick="addReminder(); uiPressEffect(this)">Add Reminder</button>
+                            <button class="btn ghost"
+                                onclick="requestNotificationPermission(); uiPressEffect(this)">Enable
+                                Notifications</button>
+                        </div>
+
+                        <div style="margin-top:12px">
+                            <h4>Active Reminders</h4>
+                            <div id="remList" class="list"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE 6: BUY -->
+                <section id="page-buy" class="page" role="region" aria-labelledby="buyTitle">
+                    <div class="card stage">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <h3 id="buyTitle">🛒 Medicine Shop</h3>
+                            <div><button class="btn ghost" onclick="navigateTo('page-dashboard'); uiPressEffect(this)">⬅
+                                    Back</button></div>
+                        </div>
+
+                        <div style="margin-top:8px;display:flex;gap:8px">
+                            <input id="buySearch" class="input" placeholder="Search medicine or brand" />
+                            <button class="btn" onclick="searchMeds(); uiPressEffect(this)">Search</button>
+                        </div>
+
+                        <div id="shopResults" style="margin-top:12px"></div>
+
+                        <div style="display:grid;grid-template-columns:1fr 360px;gap:12px;margin-top:12px">
+                            <div><!-- left: info or promos --></div>
+                            <div>
+                                <h4>Cart</h4>
+                                <div id="cartList" class="list"></div>
+
+                                <div style="margin-top:8px">
+                                    <label class="small">Payment</label>
+                                    <select id="paymentMethod" class="input">
+                                        <option value="none">Select</option>
+                                        <option value="credit">Credit Card — 10% off</option>
+                                        <option value="sbi">SBI Card — 15% off</option>
+                                        <option value="cod">Cash on Delivery</option>
+                                    </select>
+                                </div>
+
+                                <div style="display:flex;gap:8px;margin-top:8px">
+                                    <button class="btn" onclick="placeOrder(); uiPressEffect(this)">Place Order</button>
+                                    <button class="btn ghost" onclick="clearCart(); uiPressEffect(this)">Clear
+                                        Cart</button>
+                                </div>
+
+                                <div style="margin-top:12px">
+                                    <h4>Orders</h4>
+                                    <div id="ordersList" class="list"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PAGE 7: ABOUT / APP INFO (NEW) -->
+                <section id="page-about" class="page" role="region" aria-labelledby="aboutTitle">
+                    <div class="card stage">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <h2 id="aboutTitle">ℹ️ About MedsAI</h2>
+                            <div><button class="btn ghost" onclick="navigateTo('page-login'); uiPressEffect(this)">⬅
+                                    Back</button></div>
+                        </div>
+
+                        <div id="aboutContent" style="margin-top:10px; line-height:1.5;">
+                            <!-- Content populated by JS based on language -->
+                        </div>
+
+                        <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="btn" onclick="downloadGuide(); uiPressEffect(this)">Download Quick
+                                Guide</button>
+                            <button class="btn ghost" onclick="contactSupport(); uiPressEffect(this)">Contact
+                                Support</button>
+                        </div>
+                    </div>
+                </section>
+
+            </div> <!-- pages end -->
+
+            <div class="footer">MedsAI • Demo </div>
+
+        </div> <!-- panel end -->
+    </div> <!-- app end -->
+
+    <script>
+        /* ============================================================
+           MedsAI JS — Full logic & animation (Android-bounce additions)
+           + Multilingual About Page
+           ============================================================ */
+
+        /* ------------------- storage keys & helpers ------------------- */
+        const K_USERS = 'medsai_users_full_v1';
+        const K_SESS = 'medsai_session_full_v1';
+        const K_CART = 'medsai_cart_full_v1';
+        const K_ORDS = 'medsai_orders_full_v1';
+        const K_REM = 'medsai_rem_full_v1';
+        const K_BOOK = 'medsai_book_full_v1';
+        const K_SOS = 'medsai_sos_full_v1';
+
+        function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+        function load(key, fallback) { try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch (e) { return fallback; } }
+        function setSession(obj) { sessionStorage.setItem(K_SESS, JSON.stringify(obj)); }
+        function getSession() { try { return JSON.parse(sessionStorage.getItem(K_SESS) || 'null'); } catch (e) { return null; } }
+        function clearSession() { sessionStorage.removeItem(K_SESS); }
+
+        /* ------------------- language strings ------------------- */
+        let LANG = 'en';
+        const STR = {
+            en: {
+                brandTitle: 'MedsAI — Elder Care',
+                brandSub: 'Smart reminders • SOS • Doctor booking • Medicine shop',
+                loginTitle: '🔐 Login / Register',
+                loginNote: 'Enter phone, then name & password.',
+                subNote: 'Type 999 and press Subscribe to unlock Premium features (demo).',
+                welcome: 'Welcome to MedsAI',
+                sending: 'Sending location to Hospital and Family...',
+                sent_ok: '📍 Location sent to Hospital and Family successfully.',
+                loc_err: 'Location permission denied or error',
+                no_login: 'Please login first',
+                order_placed: 'Order placed successfully!',
+                order_cancel: 'Order cancelled',
+                booking_confirm: 'Booking confirmed',
+                about_title: 'About MedsAI',
+                about_intro: `MedsAI is an Elder Care companion app designed to help seniors and caregivers manage medication, appointments and emergencies with ease.`,
+                about_features_heading: 'Key Features',
+                about_features: [
+                    'Quick SOS with live location sharing to hospital & family (Premium).',
+                    'Medicine Reminders (AM/PM & 24-hour modes) with notifications.',
+                    'Doctor Search & Booking — find nearby specialists and schedule visits.',
+                    'Medicine Shop — search, add to cart, and place demo orders.',
+                    'AI Assistant (demo) for quick non-diagnostic advice.',
+                    'Multi-language support: English, Bengali (বাংলা), Hindi (हिन्दी).'
+                ],
+                about_how_heading: 'How to use',
+                about_how: [
+                    'Login or Register with phone, name & password (demo-only).',
+                    'Subscribe (type 999) to unlock Premium features like SOS.',
+                    'Set medicine reminders and allow notifications for alerts.',
+                    'Use Book Doctor to schedule appointments.',
+                    'Use Buy Medicine to add items and place demo orders.'
+                ],
+                about_privacy_heading: 'Privacy & Safety',
+                about_privacy: `This is a demo app with local-only storage. No real payments or external servers are used here. For production, ensure encrypted storage and secure APIs.`,
+                about_contact_heading: 'Contact & Support',
+                about_contact: `Developer: MedsAI Demo Team\nEmail: support@medsai.example (demo)`,
+                about_download_text: 'Download Quick Guide'
+            },
+            bn: {
+                brandTitle: 'MedsAI — প্রবীণ যত্ন',
+                brandSub: 'রিমাইন্ডার • SOS • ডাক্তার বুকিং • ঔষধ',
+                loginTitle: '🔐 লগইন / রেজিস্টার',
+                loginNote: 'প্রথমে ফোন, তারপর নাম ও পাসওয়ার্ড দিন।',
+                subNote: 'নিশ্চিত করতে 999 টাইপ করে Subscribe করুন (ডেমো)।',
+                welcome: 'স্বাগতম MedsAI-তে',
+                sending: 'লোকেশন হাসপাতাল ও পরিবারে পাঠানো হচ্ছে...',
+                sent_ok: '📍 লোকেশন সফলভাবে হাসপাতালে ও পরিবারের কাছে পাঠানো হয়েছে।',
+                loc_err: 'লোকেশন অনুমতি বাধা বা ত্রুটি',
+                no_login: 'অনুগ্রহ করে আগে লগইন করুন',
+                order_placed: 'অর্ডার সফলভাবে হয়েছে!',
+                order_cancel: 'অর্ডার বাতিল করা হয়েছে',
+                booking_confirm: 'বুকিং নিশ্চিত হয়েছে',
+                about_title: 'MedsAI সম্পর্কে',
+                about_intro: `MedsAI একটি প্রবীণ যত্ন সহযোগী অ্যাপ যা বয়স্ক ও তাদের দেখাশোনা করা ব্যক্তিদের ওষুধ, অ্যাপয়েন্টমেন্ট এবং জরুরি অবস্থার পরিচালনা সহজ করে দেয়।`,
+                about_features_heading: 'মূল ফিচারসমূহ',
+                about_features: [
+                    'লাইভ লোকেশন শেয়ারিং সহ দ্রুত SOS (প্রিমিয়াম)।',
+                    'ওষুধের রিমাইন্ডার (AM/PM ও 24-ঘন্টা) ও নোটিফিকেশন।',
+                    'ডাক্তার খোঁজা ও বুকিং — কাছের বিশেষজ্ঞদের খুঁজে সময় নির্ধারণ।',
+                    'ঔষধ শপ — সার্চ, কার্ট ও ডেমো অর্ডার।',
+                    'AI সহকারী (ডেমো) — দ্রুত সাধারণ পরামর্শ।',
+                    'ভাষা সমর্থন: English, বাংলা, हिन्दी।'
+                ],
+                about_how_heading: 'কিভাবে ব্যবহার করবেন',
+                about_how: [
+                    'ফোন, নাম ও পাসওয়ার্ড দিয়ে লগইন / রেজিস্টার করুন (ডেমো)।',
+                    'প্রিমিয়াম আনলক করতে 999 টাইপ করে সাবস্ক্রাইব করুন।',
+                    'রিমাইন্ডার সেট করুন ও নোটিফিকেশন অনুমতি দিন।',
+                    'ডাক্তারের বুকিং করতে Book Doctor ব্যবহার করুন।',
+                    'ঔষধ কিনতে Buy Medicine ব্যবহার করে কার্টে предмет যোগ করুন ও অর্ডার করুন।'
+                ],
+                about_privacy_heading: 'গোপনীয়তা ও সুরক্ষা',
+                about_privacy: `এটি একটি ডেমো অ্যাপ; সব তথ্য লোকাল স্টোরেজে সংরক্ষিত হয়। বাস্তব প্রোডাকশনে এনক্রিপশন ও নিরাপদ API ব্যবহার করুন।`,
+                about_contact_heading: 'যোগাযোগ ও সাপোর্ট',
+                about_contact: `ডেভেলপার: MedsAI Demo Team\nEmail: support@medsai.example (ডেমো)`,
+                about_download_text: 'কুইক গাইড ডাউনলোড'
+            },
+            hi: {
+                brandTitle: 'MedsAI — बुजुर्ग देखभाल',
+                brandSub: 'रिमाइंडर • SOS • डॉक्टर बुकिंग • दवा खरीदें',
+                loginTitle: '🔐 लॉगिन / रजिस्टर',
+                loginNote: 'पहले फोन, फिर नाम और पासवर्ड डालें।',
+                subNote: 'पुष्टि के लिए 999 टाइप कर Subscribe करें (डेमो)।',
+                welcome: 'MedsAI में आपका स्वागत है',
+                sending: 'लोकेशन अस्पताल और परिवार को भेजा जा रहा है...',
+                sent_ok: '📍 लोकेशन अस्पताल और परिवार को सफलतापूर्वक भेज दी गई है।',
+                loc_err: 'लोकेशन अनुमति नहीं या त्रुटि',
+                no_login: 'कृपया पहले लॉगिन करें',
+                order_placed: 'ऑर्डर सफलतापूर्वक हुआ!',
+                order_cancel: 'ऑर्डर रद्द कर दिया गया',
+                booking_confirm: 'बुकिंग पुष्टि हुई',
+                about_title: 'MedsAI के बारे में',
+                about_intro: `MedsAI बुजुर्गों के लिए एक सहायक ऐप है जो दवा, अपॉइंटमेंट और आपातकालीन स्थितियों को सरल बनाता है।`,
+                about_features_heading: 'प्रमुख विशेषताएँ',
+                about_features: [
+                    'लाइव लोकेशन शेयरिंग के साथ त्वरित SOS (प्रिमियम)।',
+                    'दवा रिमाइंडर (AM/PM & 24-hour) और नोटिफिकेशन।',
+                    'डॉक्टर खोज और बुकिंग — नज़दीकी विशेषज्ञों को खोजें और अपॉइंटमेंट शेड्यूल करें।',
+                    'दवा शॉप — सर्च, कार्ट और डेमो ऑर्डर।',
+                    'AI असिस्टेंट (डेमो) — त्वरित सामान्य सलाह।',
+                    'मल्टी-भाषा समर्थन: English, বাংলা, हिन्दी।'
+                ],
+                about_how_heading: 'कैसे उपयोग करें',
+                about_how: [
+                    'फोन, नाम और पासवर्ड से लॉगिन/रजिस्टर करें (डेमो)।',
+                    'प्रिमियम अनलॉक करने के लिए 999 टाइप कर सब्सक्राइब करें।',
+                    'रिमाइंडर सेट करें और नोटिफिकेशन की अनुमति दें।',
+                    'डॉक्टर बुक करने के लिए Book Doctor का उपयोग करें।',
+                    'Buy Medicine से आइटम जोड़ें और डेमो ऑर्डर करें।'
+                ],
+                about_privacy_heading: 'गोपनीयता और सुरक्षा',
+                about_privacy: `यह एक डेमो ऐप है; सभी डेटा लोकल स्टोरेज में रखा जाता है। प्रोडक्शन में एनक्रिप्शन और सुरक्षित API का उपयोग करें।`,
+                about_contact_heading: 'संपर्क और समर्थन',
+                about_contact: `डेवलपर: MedsAI Demo Team\nEmail: support@medsai.example (डेमो)`,
+                about_download_text: 'क्विक गाइड डाउनलोड'
+            }
+        };
+
+        function t(k) { return (STR[LANG] && STR[LANG][k]) || (STR['en'][k] || k); }
+
+        /* ------------------- UI Press & Bounce Helpers ------------------- */
+
+        function uiPressEffect(el, isStrong = false) {
+            try {
+                if (!el) return;
+                el.classList.remove('press-bounce');
+                if (el.classList.contains('sos-large') || isStrong) {
+                    el.classList.add('press-bounce');
+                    setTimeout(() => el.classList.remove('press-bounce'), 420);
+                } else {
+                    el.classList.add('press-bounce');
+                    setTimeout(() => el.classList.remove('press-bounce'), 260);
+                }
+                if (navigator.vibrate) navigator.vibrate(isStrong ? [25, 10, 25] : 12);
+            } catch (e) { /* ignore */ }
+        }
+
+        function attachPressBounce(selector) {
+            document.querySelectorAll(selector).forEach(el => {
+                el.addEventListener('mousedown', () => uiPressEffect(el));
+                el.addEventListener('touchstart', () => uiPressEffect(el));
+            });
+        }
+
+        /* ------------------- Page navigation (animated with bounce) ------------------- */
+        function navigateTo(id) {
+            const current = document.querySelector('.page.active');
+            const next = document.getElementById(id);
+            if (!next) return console.warn('Page not found:', id);
+
+            if (current === next) {
+                showStage(next);
+                next.classList.remove('bounce-in');
+                void next.offsetWidth;
+                next.classList.add('bounce-in');
+                return;
+            }
+
+            if (current) {
+                current.classList.remove('active');
+                current.classList.add('leaving');
+                setTimeout(() => current.classList.remove('leaving'), 520);
+            }
+
+            next.classList.add('active');
+            next.classList.remove('bounce-in');
+            void next.offsetWidth;
+            next.classList.add('bounce-in');
+
+            if (navigator.vibrate) navigator.vibrate(10);
+            setTimeout(() => showStage(next), 120);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        function showPage(id) { navigateTo(id); }
+        function showStage(pageEl) {
+            if (typeof pageEl === 'string') pageEl = document.getElementById(pageEl);
+            if (!pageEl) return;
+            pageEl.classList.remove('show-stage');
+            const items = pageEl.querySelectorAll('.stage');
+            items.forEach((el, idx) => { el.style.transitionDelay = `${idx * 60}ms`; });
+            setTimeout(() => pageEl.classList.add('show-stage'), 80);
+        }
+
+        /* ------------------- Splash lifecycle (spring exit) ------------------- */
+        (function splashLife() {
+            const splash = document.getElementById('splash');
+            const appRoot = document.getElementById('appRoot');
+
+            setTimeout(() => {
+                appRoot.classList.add('pop-in');
+                attachPressBounce('.action, .btn, .sos-large');
+            }, 120);
+
+            const min = 700;
+            const extra = 600 + Math.random() * 700;
+            setTimeout(() => {
+                if (splash) {
+                    splash.classList.add('hidden');
+                    const panel = document.querySelector('.panel');
+                    if (panel) {
+                        panel.style.transition = 'transform 520ms cubic-bezier(.2,.8,.28,1.2)';
+                        panel.style.transform = 'translateY(0) scale(1.002)';
+                        setTimeout(() => { panel.style.transform = 'translateY(0) scale(1)'; }, 520);
+                    }
+                    setTimeout(() => {
+                        splash.style.display = 'none';
+                        const sess = getSession();
+                        if (sess && sess.phone) {
+                            if (sess.isPremium) navigateTo('page-dashboard'); else navigateTo('page-subscription');
+                        } else {
+                            navigateTo('page-login');
+                        }
+                    }, 520);
+                } else {
+                    const sess = getSession();
+                    if (sess && sess.phone) {
+                        if (sess.isPremium) navigateTo('page-dashboard'); else navigateTo('page-subscription');
+                    } else {
+                        navigateTo('page-login');
+                    }
+                }
+            }, min + extra);
+        })();
+
+        /* ------------------- About page renderer ------------------- */
+        function renderAbout() {
+            const c = document.getElementById('aboutContent');
+            if (!c) return;
+            const s = STR[LANG];
+            let html = '';
+            html += `<h3>${s.about_title}</h3>`;
+            html += `<p style="margin-top:8px">${s.about_intro}</p>`;
+            html += `<h4 style="margin-top:12px">${s.about_features_heading}</h4><ul>`;
+            (s.about_features || []).forEach(f => html += `<li>${f}</li>`);
+            html += `</ul>`;
+            html += `<h4 style="margin-top:10px">${s.about_how_heading}</h4><ol>`;
+            (s.about_how || []).forEach(h => html += `<li>${h}</li>`);
+            html += `</ol>`;
+            html += `<h4 style="margin-top:10px">${s.about_privacy_heading}</h4><p>${s.about_privacy}</p>`;
+            html += `<h4 style="margin-top:10px">${s.about_contact_heading}</h4><pre style="white-space:pre-wrap">${s.about_contact}</pre>`;
+            c.innerHTML = html;
+        }
+
+        /* Download quick guide (simple text file) */
+        function downloadGuide() {
+            const s = STR[LANG];
+            const lines = [];
+            lines.push(s.about_title);
+            lines.push('');
+            lines.push(s.about_intro);
+            lines.push('');
+            lines.push(s.about_features_heading + ':');
+            (s.about_features || []).forEach(f => lines.push('- ' + f));
+            lines.push('');
+            lines.push(s.about_how_heading + ':');
+            (s.about_how || []).forEach(h => lines.push('- ' + h));
+            lines.push('');
+            lines.push(s.about_privacy_heading + ':');
+            lines.push(s.about_privacy);
+            lines.push('');
+            lines.push(s.about_contact_heading + ':');
+            lines.push(s.about_contact);
+
+            const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'MedsAI-Quick-Guide-' + LANG + '.txt';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        /* Contact support (demo) */
+        function contactSupport() {
+            alert((LANG === 'bn') ? 'Support: support@medsai.example (ডেমো)' : (LANG === 'hi') ? 'Support: support@medsai.example (डेमो)' : 'Support: support@medsai.example (demo)');
+        }
+
+        /* ------------------- Language setup ------------------- */
+        document.getElementById('lang').addEventListener('change', (e) => changeLang(e.target.value));
+        function changeLang(code) {
+            LANG = code;
+            document.getElementById('brandTitle').innerText = t('brandTitle');
+            document.getElementById('brandSub').innerText = t('brandSub');
+            document.getElementById('loginNote').innerText = t('loginNote');
+            document.getElementById('subNote').innerText = t('subNote');
+            document.getElementById('welcomeText').innerText = t('welcome');
+            const s = getSession(); document.getElementById('userBadge').innerText = s ? s.name + (s.isPremium ? ' (Premium)' : '') : 'Guest';
+            renderAbout();
+        }
+
+        /* ------------------- Session: Login & Subscription ------------------- */
+        function fillDemo() {
+            document.getElementById('loginPhone').value = '9876543210';
+            document.getElementById('loginName').value = 'Demo User';
+            document.getElementById('loginPass').value = 'demo123';
+        }
+        function doLogin() {
+            const phone = document.getElementById('loginPhone').value.trim();
+            const name = document.getElementById('loginName').value.trim();
+            const pass = document.getElementById('loginPass').value;
+            if (!phone || !name || !pass) { alert(t('loginNote')); return; }
+            const users = load(K_USERS, {});
+            if (!users[phone]) users[phone] = { phone, name, pass, isPremium: false };
+            else { users[phone].name = name; users[phone].pass = pass; }
+            save(K_USERS, users);
+            setSession(users[phone]);
+            document.getElementById('userBadge').innerText = name;
+            // micro bounce on login
+            const root = document.getElementById('appRoot');
+            if (root) {
+                root.style.transition = 'transform 360ms cubic-bezier(.2,.8,.28,1.2)';
+                root.style.transform = 'translateY(-6px) scale(1.002)';
+                setTimeout(() => { root.style.transform = 'translateY(0) scale(1)'; }, 360);
+            }
+            navigateTo('page-subscription');
+        }
+
+        /* subscription */
+        document.addEventListener('DOMContentLoaded', function () {
+            const subInput = document.getElementById('subInput');
+            if (subInput) subInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') confirmSubscription(); });
+        });
+        function confirmSubscription() {
+            const code = document.getElementById('subInput').value.trim();
+            if (code !== '999') { alert((LANG === 'bn') ? '৯৯৯ টাইপ করুন' : (LANG === 'hi') ? 'कृपया 999 टाइप करें' : 'Please type 999'); return; }
+            const sess = getSession();
+            if (!sess) { alert(t('no_login')); showPage('page-login'); return; }
+            const users = load(K_USERS, {});
+            users[sess.phone].isPremium = true; save(K_USERS, users);
+            sess.isPremium = true; setSession(sess);
+            document.getElementById('userBadge').innerText = sess.name + ' (Premium)';
+            alert((LANG === 'bn') ? 'সাবস্ক্রিপশন সফল!' : (LANG === 'hi') ? 'सब्सक्रिप्शन सफल!' : 'Subscription successful!');
+            renderDashboard();
+            navigateTo('page-dashboard');
+        }
+
+        /* ------------------- Clock & Dashboard render ------------------- */
+        function renderDashboard() {
+            const s = getSession();
+            document.getElementById('welcomeText').innerText = t('welcome') + (s ? (', ' + s.name.split(' ')[0]) : '');
+            document.getElementById('userBadge').innerText = s ? s.name + (s.isPremium ? ' (Premium)' : '') : 'Guest';
+        }
+        function updateClock() {
+            const now = new Date();
+            const opts = { hour: '2-digit', minute: '2-digit' };
+            document.getElementById('timeNow').innerText = now.toLocaleTimeString([], opts);
+            document.getElementById('dateNow').innerText = now.toLocaleDateString();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        /* ------------------- SOS Feature ------------------- */
+        function sendSOS() {
+            const sess = getSession();
+            if (!sess) { alert(t('no_login')); navigateTo('page-login'); return; }
+            if (!sess.isPremium) {
+                if (confirm((LANG === 'bn') ? 'SOS প্রিমিয়াম ফিচার। সাবস্ক্রাইব করতে চান?' : (LANG === 'hi') ? 'SOS प्रीमियम है। सब्सक्राइब करें?' : 'SOS is premium. Subscribe?')) navigateTo('page-subscription');
+                return;
+            }
+            const btn = document.getElementById('sosBtn'), status = document.getElementById('sosStatus');
+            status.innerText = t('sending'); btn.classList.add('blink');
+            uiPressEffect(btn, true);
+            if (!navigator.geolocation) { status.innerText = t('loc_err'); btn.classList.remove('blink'); return; }
+            navigator.geolocation.getCurrentPosition(pos => {
+                const lat = pos.coords.latitude.toFixed(6), lon = pos.coords.longitude.toFixed(6);
+                const mapUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+                const logs = load(K_SOS, []);
+                logs.push({ time: new Date().toISOString(), lat, lon });
+                save(K_SOS, logs);
+                status.innerHTML = t('sent_ok') + ` <a href="${mapUrl}" target="_blank">Open Maps</a>`;
+                if ('speechSynthesis' in window) speechSynthesis.speak(new SpeechSynthesisUtterance(t('sent_ok')));
+                if (navigator.vibrate) navigator.vibrate([200, 80, 200]);
+                btn.classList.remove('blink'); btn.classList.add('sent');
+                setTimeout(() => { btn.classList.remove('sent'); btn.classList.add('blink'); }, 7000);
+                setTimeout(() => { status.innerHTML += `<div class="small">Shared with: Hospital, Primary Contact</div>`; }, 500);
+            }, err => {
+                status.innerText = t('loc_err'); btn.classList.remove('blink');
+            }, { timeout: 10000 });
+        }
+
+        /* ------------------- Doctor List & Booking ------------------- */
+        const DOCTORS = [
+            { id: 1, name: 'Dr. Ananya Das', spec: 'General Physician', city: 'Kolkata', rating: 4.9, fees: 500 },
+            { id: 2, name: 'Dr. Rohan Sen', spec: 'Cardiologist', city: 'Delhi', rating: 4.8, fees: 800 },
+            { id: 3, name: 'Dr. Meera Sharma', spec: 'Neurologist', city: 'Mumbai', rating: 4.7, fees: 700 },
+            { id: 4, name: 'Dr. Pratik Roy', spec: 'Geriatric Specialist', city: 'Bangalore', rating: 4.9, fees: 600 },
+            { id: 5, name: 'Dr. Seema Kapoor', spec: 'Orthopedics', city: 'Chennai', rating: 4.6, fees: 650 }
+        ];
+
+        function openDoctor() { navigateTo('page-doctor'); renderDoctorResults(DOCTORS); renderBookings(); }
+        function searchDoctors() {
+            const q = document.getElementById('docSearch').value.trim().toLowerCase();
+            const res = DOCTORS.filter(d => d.name.toLowerCase().includes(q) || d.spec.toLowerCase().includes(q) || d.city.toLowerCase().includes(q));
+            renderDoctorResults(res);
+        }
+        function renderDoctorResults(list) {
+            const el = document.getElementById('docResults'); el.innerHTML = '';
+            if (!list || !list.length) { el.innerHTML = `<div class="small">${(LANG === 'bn') ? 'কোনও ডক্টর পাওয়া যায়নি' : (LANG === 'hi') ? 'कोई डॉक्टर नहीं मिला' : 'No doctors found'}</div>`; return; }
+            list.forEach(d => {
+                const div = document.createElement('div'); div.className = 'list-item';
+                const safeJson = JSON.stringify(d).replaceAll("'", "&#39;");
+                div.innerHTML = `<div><strong>${d.name}</strong><div class="small">${d.spec} • ${d.city} • ${d.rating}⭐ • ₹${d.fees}</div></div>
+      <div style="display:flex;gap:8px"><button class="btn" onclick='bookDoctor(${safeJson}); uiPressEffect(this)'>Book</button></div>`;
+                el.appendChild(div);
+            });
+        }
+
+        function bookDoctor(d) {
+            const when = prompt((LANG === 'bn') ? 'এপয়েন্টমেন্টের তারিখ ও সময় লিখুন (e.g. 2025-10-25 11:30)' : (LANG === 'hi') ? 'अपॉइंटमेंट तिथि और समय दर्ज करें (e.g. 2025-10-25 11:30)' : 'Enter appointment date & time (e.g. 2025-10-25 11:30)', '');
+            if (!when) return;
+            const bookings = load(K_BOOK, []);
+            bookings.push({ id: Date.now(), doctor: d, when });
+            save(K_BOOK, bookings); renderBookings();
+            if (navigator.vibrate) navigator.vibrate(20);
+            alert(t('booking_confirm'));
+        }
+
+        function renderBookings() {
+            const el = document.getElementById('bookings'); el.innerHTML = '';
+            const list = load(K_BOOK, []);
+            if (!list.length) { el.innerHTML = `<div class="small">${(LANG === 'bn') ? 'কোনও বুকিং নেই' : (LANG === 'hi') ? 'कोई बुकिंग नहीं' : 'No bookings'}</div>`; return; }
+            list.forEach(b => {
+                const div = document.createElement('div'); div.className = 'list-item';
+                div.innerHTML = `<div><strong>${b.doctor.name}</strong><div class="small">${b.when}</div></div>
+      <div><button class="btn ghost" onclick="cancelBooking(${b.id}); uiPressEffect(this)">Cancel</button></div>`;
+                el.appendChild(div);
+            });
+        }
+
+        function cancelBooking(id) {
+            let arr = load(K_BOOK, []);
+            arr = arr.filter(x => x.id !== id);
+            save(K_BOOK, arr); renderBookings();
+            if (navigator.vibrate) navigator.vibrate(12);
+        }
+
+        /* ------------------- Reminders ------------------- */
+        function openReminder() { navigateTo('page-reminder'); renderReminders(); }
+        function addReminder() {
+            const name = document.getElementById('remMed').value.trim();
+            const time = document.getElementById('remTime').value;
+            const mode = document.getElementById('remMode').value;
+            if (!name || !time) { alert((LANG === 'bn') ? 'নাম ও সময় দিন' : (LANG === 'hi') ? 'नाम और समय डालें' : 'Enter name and time'); return; }
+            let display = time; let time24 = time;
+            if (mode === 'ampm') {
+                const ap = prompt((LANG === 'bn') ? 'AM বা PM লিখুন' : (LANG === 'hi') ? 'AM या PM दर्ज करें' : 'Type AM or PM', 'AM');
+                if (!ap) return;
+                const apu = ap.toUpperCase() === 'PM' ? 'PM' : 'AM';
+                const [hh, mm] = time.split(':'); let hh24 = parseInt(hh, 10);
+                if (apu === 'PM' && hh24 < 12) hh24 += 12;
+                if (apu === 'AM' && hh24 === 12) hh24 = 0;
+                time24 = String(hh24).padStart(2, '0') + ':' + mm;
+                display = `${hh}:${mm} ${apu}`;
+            }
+            const rems = load(K_REM, []);
+            rems.push({ id: Date.now(), name, time: time24, display, last: null });
+            save(K_REM, rems);
+            document.getElementById('remMed').value = ''; document.getElementById('remTime').value = '';
+            renderReminders();
+            if (navigator.vibrate) navigator.vibrate(10);
+        }
+
+        function renderReminders() {
+            const el = document.getElementById('remList'); el.innerHTML = '';
+            const rems = load(K_REM, []);
+            if (!rems.length) { el.innerHTML = `<div class="small">${(LANG === 'bn') ? 'কোনও রিমাইন্ডার নেই' : (LANG === 'hi') ? 'कोई रिमाइंडर नहीं' : 'No reminders'}</div>`; return; }
+            rems.forEach(r => {
+                const div = document.createElement('div'); div.className = 'list-item';
+                div.innerHTML = `<div><strong>${r.name}</strong><div class="small">${r.display}</div></div>
+      <div style="display:flex;gap:8px"><button class="btn ghost" onclick="testReminder(${r.id}); uiPressEffect(this)">Test</button><button class="btn ghost" onclick="deleteReminder(${r.id}); uiPressEffect(this)">Delete</button></div>`;
+                el.appendChild(div);
+            });
+        }
+
+        function testReminder(id) {
+            const rem = load(K_REM, []).find(x => x.id === id);
+            if (rem) notifyReminder(rem);
+        }
+
+        function deleteReminder(id) {
+            let arr = load(K_REM, []);
+            arr = arr.filter(x => x.id !== id);
+            save(K_REM, arr); renderReminders();
+        }
+
+        function notifyReminder(r) {
+            const title = (LANG === 'bn') ? `ওষুধ: ${r.name}` : (LANG === 'hi') ? `दवा: ${r.name}` : `Time to take: ${r.name}`;
+            const body = r.display;
+            if ('Notification' in window && Notification.permission === 'granted') { new Notification(title, { body }); } else { alert(title + '\n' + body); }
+            if ('speechSynthesis' in window) speechSynthesis.speak(new SpeechSynthesisUtterance(title));
+            if (navigator.vibrate) navigator.vibrate(30);
+        }
+
+        function requestNotificationPermission() {
+            if (!('Notification' in window)) { alert('Notifications not supported'); return; }
+            Notification.requestPermission().then(p => alert('Permission: ' + p));
+        }
+
+        /* periodic reminder check every 20 seconds */
+        setInterval(() => {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const cur = hh + ':' + mm;
+            let rems = load(K_REM, []);
+            let changed = false;
+            rems.forEach((r, i) => {
+                if (r.time === cur && r.last !== cur) {
+                    notifyReminder(r); rems[i].last = cur; changed = true;
+                }
+            });
+            if (changed) save(K_REM, rems);
+            renderReminders();
+        }, 20000);
+
+        /* ------------------- Shop & orders ------------------- */
+        const SHOP = [
+            { id: 1, name: 'Paracetamol 500mg', brand: 'Acme Pharma', price: 50, stock: 120 },
+            { id: 2, name: 'Amoxicillin 500mg', brand: 'HealWell', price: 120, stock: 60 },
+            { id: 3, name: 'Azithromycin 250mg', brand: 'Zypharm', price: 180, stock: 40 },
+            { id: 4, name: 'Cetirizine 10mg', brand: 'AllerFree', price: 40, stock: 200 },
+            { id: 5, name: 'Metformin 500mg', brand: 'GlucoCare', price: 90, stock: 80 },
+            { id: 6, name: 'Cough Syrup 100ml', brand: 'ReliefMed', price: 75, stock: 50 },
+            { id: 7, name: 'Vitamin C 500mg', brand: 'Nutri', price: 150, stock: 100 }
+        ];
+
+        function openBuy() { navigateTo('page-buy'); renderShop(SHOP); renderCart(); renderOrders(); }
+        function searchMeds() { const q = document.getElementById('buySearch').value.trim().toLowerCase(); const res = SHOP.filter(s => s.name.toLowerCase().includes(q) || s.brand.toLowerCase().includes(q)); renderShop(res); }
+        function renderShop(list) {
+            const el = document.getElementById('shopResults'); el.innerHTML = '';
+            if (!list.length) { el.innerHTML = `<div class="small">${(LANG === 'bn') ? 'কোনও ঔষধ পাওয়া যায়নি' : (LANG === 'hi') ? 'कोई दवा नहीं' : 'No medicines found'}</div>`; return; }
+            list.forEach(p => {
+                const div = document.createElement('div'); div.className = 'list-item';
+                div.innerHTML = `<div><strong>${p.name}</strong><div class="small">${p.brand} • Stock: ${p.stock}</div></div>
+      <div style="text-align:right"><div class="small">₹${p.price}</div>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+        <input id="qty_${p.id}" type="number" min="1" value="1" style="width:72px;padding:6px;border-radius:6px;border:1px solid #e6f7f8" />
+        <button class="btn" onclick='addToCart(${p.id}, parseInt(document.getElementById("qty_${p.id}").value)); uiPressEffect(this)'>Add</button>
+      </div></div>`;
+                el.appendChild(div);
+            });
+        }
+
+        /* cart helpers */
+        function getCart() { return load(K_CART, []); }
+        function saveCart(c) { save(K_CART, c); }
+        function addToCart(id, qty) {
+            const prod = SHOP.find(s => s.id === id);
+            if (!prod) return alert((LANG === 'bn') ? 'পণ্য পাওয়া যায়নি' : (LANG === 'hi') ? 'उत्पाद नहीं मिला' : 'Product not found');
+            if (qty <= 0) qty = 1;
+            if (qty > prod.stock) return alert((LANG === 'bn') ? 'স্টক পর্যাপ্ত নেই' : (LANG === 'hi') ? 'स्टॉक उपलब्ध नहीं' : 'Not enough stock');
+            let cart = getCart();
+            const ex = cart.find(c => c.id === id);
+            if (ex) ex.qty += qty; else cart.push({ id: prod.id, name: prod.name, price: prod.price, qty });
+            saveCart(cart); renderCart();
+            if (navigator.vibrate) navigator.vibrate(8);
+            alert((LANG === 'bn') ? 'কার্টে যোগ করা হয়েছে' : (LANG === 'hi') ? 'कार्ट में जोड़ा गया' : 'Added to cart');
+        }
+        function renderCart() {
+            const el = document.getElementById('cartList'); el.innerHTML = '';
+            const cart = getCart();
+            if (!cart.length) { el.innerHTML = `<div class="small">${(LANG === 'bn') ? 'কার্ট খালি' : (LANG === 'hi') ? 'कार्ट खाली' : 'Cart empty'}</div>`; return; }
+            cart.forEach((c, i) => {
+                const d = document.createElement('div'); d.className = 'list-item';
+                d.innerHTML = `<div><strong>${c.name}</strong><div class="small">Qty: ${c.qty} • ₹${c.price}</div></div>
+      <div><button class="btn ghost" onclick="removeFromCart(${i}); uiPressEffect(this)">Remove</button></div>`;
+                el.appendChild(d);
+            });
+        }
+        function removeFromCart(i) { let cart = getCart(); cart.splice(i, 1); saveCart(cart); renderCart(); if (navigator.vibrate) navigator.vibrate(8); }
+        function clearCart() { save(K_CART, []); renderCart(); }
+
+        /* place order */
+        function placeOrder() {
+            const cart = getCart();
+            if (!cart.length) return alert((LANG === 'bn') ? 'কার্ট খালি' : (LANG === 'hi') ? 'कार्ट खाली' : 'Cart empty');
+            const pay = document.getElementById('paymentMethod').value;
+            let total = cart.reduce((s, c) => s + c.price * c.qty, 0);
+            let disc = 0; if (pay === 'credit') disc = 0.10; if (pay === 'sbi') disc = 0.15;
+            const final = total * (1 - disc);
+            if (!confirm((LANG === 'bn') ? `অর্ডার নিশ্চিত করুন ₹${final.toFixed(2)} (${disc * 100}% ডিসকাউন্ট)?` : (LANG === 'hi') ? `ऑर्डर पक्का करें ₹${final.toFixed(2)} (${disc * 100}% छूट)?` : `Confirm order ₹${final.toFixed(2)} (discount ${disc * 100}%)?`)) return;
+            const orders = load(K_ORDS, []);
+            const order = { id: Date.now(), items: cart, total, disc, final, time: new Date().toISOString(), status: 'placed' };
+            orders.push(order); save(K_ORDS, orders);
+            cart.forEach(ci => { const p = SHOP.find(s => s.id === ci.id); if (p) p.stock = Math.max(0, p.stock - ci.qty); });
+            clearCart(); renderOrders();
+            if (navigator.vibrate) navigator.vibrate([30, 10, 20]);
+            alert(t('order_placed'));
+        }
+        function renderOrders() {
+            const el = document.getElementById('ordersList'); el.innerHTML = '';
+            const orders = load(K_ORDS, []);
+            if (!orders.length) { el.innerHTML = `<div class="small">${(LANG === 'bn') ? 'কোনও অর্ডার নেই' : (LANG === 'hi') ? 'कोई ऑर्डर नहीं' : 'No orders'}</div>`; return; }
+            orders.slice().reverse().forEach(o => {
+                const d = document.createElement('div'); d.className = 'list-item';
+                const itemsCount = o.items.reduce((s, i) => s + i.qty, 0);
+                d.innerHTML = `<div><strong>Order ${o.id}</strong><div class="small">${itemsCount} items • ₹${o.final.toFixed(2)} • ${new Date(o.time).toLocaleString()}</div></div>
+      <div>${o.status === 'placed' ? `<button class="btn danger" onclick="cancelOrder(${o.id}); uiPressEffect(this)">Cancel</button>` : `<span class="small">Cancelled</span>`}</div>`;
+                el.appendChild(d);
+            });
+        }
+        function cancelOrder(id) {
+            if (!confirm((LANG === 'bn') ? 'এই অর্ডারটি বাতিল করবেন?' : (LANG === 'hi') ? 'क्या आप इस ऑर्डर को रद्द करना चाहते हैं?' : 'Cancel this order?')) return;
+            let orders = load(K_ORDS, []);
+            const ord = orders.find(o => o.id === id);
+            if (!ord) return alert('Order not found');
+            ord.items.forEach(it => { const p = SHOP.find(s => s.id === it.id); if (p) p.stock += it.qty; });
+            orders = orders.map(o => o.id === id ? { ...o, status: 'cancelled' } : o);
+            save(K_ORDS, orders); renderOrders();
+            if (navigator.vibrate) navigator.vibrate(12);
+            alert(t('order_cancel'));
+        }
+
+        /* ------------------- AI Advisor (simple canned) ------------------- */
+        function openAI() { const q = prompt((LANG === 'bn') ? 'আপনি কি জানতে চান?' : (LANG === 'hi') ? 'आप क्या जानना चाहते हैं?' : 'What do you want to ask?', ''); if (!q) return; alert('MedsAI: ' + simpleAI(q)); }
+        function askQuick() { const q = document.getElementById('quickQuestion').value.trim(); if (!q) return; document.getElementById('quickReply').innerText = (LANG === 'bn') ? 'চিন্তা করছি...' : (LANG === 'hi') ? 'सोच रहा हूँ...' : 'Thinking...'; setTimeout(() => { document.getElementById('quickReply').innerText = simpleAI(q); document.getElementById('quickQuestion').value = ''; }, 900); }
+        function simpleAI(q) { q = q.toLowerCase(); if (q.includes('fever') || q.includes('জ্বর') || q.includes('bukhar')) return (LANG === 'bn') ? 'সম্ভব জ্বর — বিশ্রাম ও হাইড্রেশন নিন।' : (LANG === 'hi') ? 'संभव ज्वर — आराम और तरल पदार्थ लें।' : 'Possible fever — rest and hydrate.'; if (q.includes('cough') || q.includes('কাশি') || q.includes('khansi')) return (LANG === 'bn') ? 'কাশির ক্ষেত্রে গরম ভাপ নিন।' : (LANG === 'hi') ? 'खांसी के लिए भाप लें।' : 'For cough: try steam inhalation.'; return (LANG === 'bn') ? 'নির্ণয় সম্ভব নয় — ডাক্তারের পরামর্শ নিন।' : (LANG === 'hi') ? 'निश्चित नहीं — डॉक्टर से सलाह लें।' : 'I am not sure — consult a doctor.'; }
+
+        /* ------------------- Logo upload preview ------------------- */
+        function previewLogo(ev) {
+            const f = ev.target.files && ev.target.files[0];
+            if (!f) return;
+            const reader = new FileReader();
+            reader.onload = function (e) { const img = e.target.result; document.getElementById('logoPreview').style.backgroundImage = `url(${img})`; document.getElementById('logoPreview').style.backgroundSize = 'cover'; document.getElementById('logoPreview').innerText = ''; }
+            reader.readAsDataURL(f);
+        }
+
+        /* ------------------- Logout & init ------------------- */
+        function logout() { clearSession(); alert((LANG === 'bn') ? 'লগআউট হয়েছে' : (LANG === 'hi') ? 'लॉगआउट हुआ' : 'Logged out'); location.reload(); }
+
+        function init() {
+            const sel = document.getElementById('lang'); if (sel) { LANG = sel.value; changeLang(LANG); }
+            const s = getSession(); if (s) { document.getElementById('userBadge').innerText = s.name + (s.isPremium ? ' (Premium)' : ''); if (s.isPremium) navigateTo('page-dashboard'); else navigateTo('page-subscription'); } else { navigateTo('page-login'); }
+            renderReminders(); renderOrders(); renderCart(); renderBookings(); renderDoctorResults(DOCTORS); renderShop(SHOP);
+            attachPressBounce('.action, .btn, .sos-large');
+            renderAbout();
+        }
+        init();
+
+        /* expose some functions for inline usage */
+        window.navigateTo = navigateTo;
+        window.showPage = navigateTo;
+        window.openDoctor = openDoctor;
+        window.openBuy = openBuy;
+        window.openReminder = openReminder;
+        window.openAI = openAI;
+        window.changeLang = changeLang;
+        window.doLogin = doLogin;
+        window.fillDemo = fillDemo;
+        window.confirmSubscription = confirmSubscription;
+        window.sendSOS = sendSOS;
+        window.searchDoctors = searchDoctors;
+        window.bookDoctor = bookDoctor;
+        window.cancelBooking = cancelBooking;
+        window.addReminder = addReminder;
+        window.requestNotificationPermission = requestNotificationPermission;
+        window.searchMeds = searchMeds;
+        window.addToCart = addToCart;
+        window.removeFromCart = removeFromCart;
+        window.clearCart = clearCart;
+        window.placeOrder = placeOrder;
+        window.cancelOrder = cancelOrder;
+        window.askQuick = askQuick;
+        window.logout = logout;
+        window.previewLogo = previewLogo;
+        window.downloadGuide = downloadGuide;
+        window.contactSupport = contactSupport;
+
+        /* End JS */
+    </script>
+</body>
+
+</html>
