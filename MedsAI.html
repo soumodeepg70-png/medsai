@@ -764,10 +764,11 @@
                         <option value="hi">हिन्दी</option>
                     </select>
                     <label for="logoUpload" style="display:inline-block;">
-                        <input id="logoUpload" type="file" accept="image/*" style="display:none"
+                        <input id="logoUpload" type="file" accept="image/*" 
                             onchange="previewLogo(event)" />
                         <button class="btn ghost" title="Upload custom logo (not tied to subscription)">Upload
                             Logo</button>
+                            <img id="logoPreview" src="" alt="" srcset="" width="80" height="80" style="border: 1px solid #ccc; border-radius: 50%;">
                     </label>
                 </div>
             </div>
@@ -836,11 +837,12 @@
                                 <div id="dateNow" class="small">--</div>
                                 <h3 id="welcomeText" style="margin:6px 0 0 0">Welcome to MedsAI</h3>
                             </div>
-                            <div style="text-align:right">
+                            <!-- <div style="text-align:right">
                                 <div id="logoPreview"
                                     style="width:56px;height:56px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(90deg,var(--primary),var(--accent));color:white;font-weight:800">
                                     M</div>
-                            </div>
+                                    
+                            </div> -->
                         </div>
 
                         <div class="sos-wrap">
@@ -1676,7 +1678,8 @@
             const f = ev.target.files && ev.target.files[0];
             if (!f) return;
             const reader = new FileReader();
-            reader.onload = function (e) { const img = e.target.result; document.getElementById('logoPreview').style.backgroundImage = `url(${img})`; document.getElementById('logoPreview').style.backgroundSize = 'cover'; document.getElementById('logoPreview').innerText = ''; }
+            // reader.onload = function (e) { const img = e.target.result; document.getElementById('logoPreview').style.backgroundImage = `url(${img})`; document.getElementById('logoPreview').style.backgroundSize = 'cover'; document.getElementById('logoPreview').innerText = ''; }
+            reader.onload = function (e) { const img = e.target.result; document.getElementById('logoPreview').src = `${img}`; document.getElementById('logoPreview').style.backgroundSize = 'cover'; }
             reader.readAsDataURL(f);
         }
 
